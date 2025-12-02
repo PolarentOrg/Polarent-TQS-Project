@@ -4,3 +4,4 @@ Our team:
 - Vasco Pereira - Product Owner
 - Tiago Coelho - QA Engineer
 - Solomiia Koba - DevOps master
+
