@@ -17,7 +17,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: "17"
+          java-version: "21"
           distribution: "temurin"
 
       - name: Cache Maven packages
@@ -30,8 +30,8 @@ jobs:
 
       - name: Build Maven project
         run: mvn -B clean package
-        working-directory: ./app/PolarentTQS
+        working-directory: ./app/Polarent
 
       - name: Run tests
         run: mvn test
-        working-directory: ./app/PolarentTQS
+        working-directory: ./app/Polarent
