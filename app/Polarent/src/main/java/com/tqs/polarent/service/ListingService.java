@@ -33,13 +33,7 @@ public class ListingService {
             throw new IllegalArgumentException("Owner not found");
         }
 
-        Listing listing = Listing.builder()
-                .ownerId(dto.getOwnerId())
-                .title(dto.getTitle())
-                .description(dto.getDescription())
-                .dailyRate(dto.getDailyRate())
-                .enabled(dto.getEnabled())
-                .build();
+        Listing listing = listingMapper.toEntity(dto);
 
         return listingMapper.toDto(
                 listingRepository.save(listing)
