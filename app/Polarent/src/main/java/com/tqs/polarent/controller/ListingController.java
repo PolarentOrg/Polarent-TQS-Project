@@ -19,4 +19,11 @@ public class ListingController {
         List<ListingResponseDTO> listings = listingService.getEnabledListings();
         return ResponseEntity.ok(listings);
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<ListingResponseDTO>> searchListings(
+            @RequestParam(value = "q", required = false) String searchTerm) {
+
+        List<ListingResponseDTO> listings = listingService.searchListings(searchTerm);
+        return ResponseEntity.ok(listings);
+    }
 }

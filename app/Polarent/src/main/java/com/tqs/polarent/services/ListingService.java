@@ -23,4 +23,14 @@ public class ListingService {
                 .map(listingMapper::toDto)
                 .collect(Collectors.toList());
     }
+    public List<ListingResponseDTO> searchListings(String searchTerm) {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            // Se não houver , retorna todos os ativos
+            return getEnabledListings();
+        }
+        List<Listing> listings = listingRepository.searchByTerm(searchTerm.trim());
+        return listings.stream()
+                .map(listingMapper::toDto)
+                .collect(Collectors.toList());
+    }
 }
