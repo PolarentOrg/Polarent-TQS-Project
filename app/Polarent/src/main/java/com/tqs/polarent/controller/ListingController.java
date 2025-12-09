@@ -1,6 +1,7 @@
 package com.tqs.polarent.controller;
 import com.tqs.polarent.dto.*;
 import com.tqs.polarent.services.ListingService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,12 @@ public class ListingController {
     @GetMapping("/enabled")
     public ResponseEntity<List<ListingResponseDTO>> getEnabledListings() {
         return ResponseEntity.ok(listingService.getEnabledListings());
+    }
+
+    @PostMapping
+    public ListingResponseDTO createListing(@RequestBody @Valid
+    ListingRequestDTO dto) {
+        return listingService.createListing(dto);
     }
 
     @PutMapping("/{id}")

@@ -4,8 +4,12 @@ import com.tqs.polarent.dto.*;
 import com.tqs.polarent.entity.Listing;
 import com.tqs.polarent.mapper.ListingMapper;
 import com.tqs.polarent.repository.ListingRepository;
+import com.tqs.polarent.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,6 +17,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ListingService {
     private final ListingRepository listingRepository;
+    private final UserRepository userRepository;
+    
     private final ListingMapper listingMapper;
 
     public List<ListingResponseDTO> getEnabledListings() {
@@ -43,5 +49,18 @@ public class ListingService {
         if (dto.getEnabled() != null) listing.setEnabled(dto.getEnabled());
 
         return listingMapper.toDto(listingRepository.save(listing));
+    }
+
+    @Transactional
+    public ListingResponseDTO createListing(ListingRequestDTO dto) {
+        if (!userRepository.existsById(dto.getOwnerId())) {
+            throw new IllegalArgumentException("Owner not found");
+        }
+
+        Listing listing = listingMapper.toEntity(dto);
+
+        return listingMapper.toDto(
+                listingRepository.save(listing)
+        );
     }
 }
