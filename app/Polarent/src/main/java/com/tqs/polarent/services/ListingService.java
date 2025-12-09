@@ -66,17 +66,4 @@ public class ListingService {
 
         return listingMapper.toDto(listingRepository.save(listing));
     }
-
-    @Transactional
-    public ListingResponseDTO createListing(ListingRequestDTO dto) {
-        if (!userRepository.existsById(dto.getOwnerId())) {
-            throw new IllegalArgumentException("Owner not found");
-        }
-
-        Listing listing = listingMapper.toEntity(dto);
-
-        return listingMapper.toDto(
-                listingRepository.save(listing)
-        );
-    }
 }
