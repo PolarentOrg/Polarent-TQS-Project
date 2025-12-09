@@ -2,7 +2,7 @@ package com.tqs.polarent.controller;
 
 import com.tqs.polarent.dto.ListingRequestDTO;
 import com.tqs.polarent.dto.ListingResponseDTO;
-import com.tqs.polarent.service.ListingService;
+import com.tqs.polarent.services.ListingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import com.tqs.polarent.entity.Listing;
