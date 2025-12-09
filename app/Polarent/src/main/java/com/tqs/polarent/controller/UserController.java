@@ -1,7 +1,7 @@
 package com.tqs.polarent.controller;
 
 import com.tqs.polarent.dto.*;
-import com.tqs.polarent.service.UserService;
+import com.tqs.polarent.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
