@@ -40,4 +40,15 @@ public class ListingService {
         );
     }
 
+    @Transactional
+    public void deleteListing(Long userId, Long listingId) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new RuntimeException("Listing not found"));
+
+        if (!listing.getOwnerId().equals(userId)) {
+            throw new RuntimeException("User not authorized to delete this listing");
+        }
+
+        listingRepository.delete(listing);
+    }
 }
