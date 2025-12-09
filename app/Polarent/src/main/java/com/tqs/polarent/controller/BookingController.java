@@ -3,7 +3,7 @@ package com.tqs.polarent.controller;
 import com.tqs.polarent.dto.BookingRequestDTO;
 import com.tqs.polarent.dto.BookingResponseDTO;
 import com.tqs.polarent.enums.Status;
-import com.tqs.polarent.services.BookingService;
+import com.tqs.polarent.service.BookingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

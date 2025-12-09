@@ -3,7 +3,7 @@ package com.tqs.polarent.controller;
 import com.tqs.polarent.dto.BookingRequestDTO;
 import com.tqs.polarent.dto.BookingResponseDTO;
 import com.tqs.polarent.enums.Status;
-import com.tqs.polarent.services.BookingService;
+import com.tqs.polarent.service.BookingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

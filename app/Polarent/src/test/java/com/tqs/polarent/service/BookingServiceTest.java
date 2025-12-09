@@ -10,7 +10,6 @@ import com.tqs.polarent.mapper.BookingMapper;
 import com.tqs.polarent.repository.BookingRepository;
 import com.tqs.polarent.repository.ListingRepository;
 import com.tqs.polarent.repository.RequestRepository;
-import com.tqs.polarent.services.BookingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
