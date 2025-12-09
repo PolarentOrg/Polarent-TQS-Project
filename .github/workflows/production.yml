@@ -33,7 +33,7 @@ jobs:
 
   deploy:
     needs: test
-    runs-on: self-hosted
+    runs-on: [self-hosted, production]
     environment: production
     steps:
       - name: Checkout
@@ -41,7 +41,7 @@ jobs:
 
       - name: Deploy to Production
         run: |
-          cd ~/Polarent-TQS-Project
+          cd ~/Polarent-MAIN
           git fetch origin
           git checkout main
           git pull origin main
