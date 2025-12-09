@@ -1,4 +1,4 @@
-package com.tqs.polarent.service;
+package com.tqs.polarent.services;
 
 import com.tqs.polarent.dto.*;
 import com.tqs.polarent.entity.Listing;
@@ -13,14 +13,42 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ListingService {
+
     private final ListingRepository listingRepository;
     private final UserRepository userRepository;
     private final ListingMapper listingMapper;
 
     public List<ListingResponseDTO> getEnabledListings() {
-        return listingRepository.findByEnabledTrue().stream()
+        return listingRepository.findByEnabledTrue()
+                .stream()
                 .map(listingMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    @Transactional
+    public ListingResponseDTO createListing(ListingRequestDTO dto) {
+        if (!userRepository.existsById(dto.getOwnerId())) {
+            throw new IllegalArgumentException("Owner not found");
+        }
+
+        Listing listing = listingMapper.toEntity(dto);
+
+        return listingMapper.toDto(
+                listingRepository.save(listing)
+        );
+    }
+
+    @Transactional
+    public void deleteListing(Long userId, Long listingId) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new RuntimeException("Listing not found"));
+
+        if (!listing.getOwnerId().equals(userId)) {
+            throw new RuntimeException("User not authorized to delete this listing");
+        }
+
+        listingRepository.delete(listing);
     }
 }
