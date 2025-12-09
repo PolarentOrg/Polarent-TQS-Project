@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: polarent
+      POSTGRES_USER: polarent
+      POSTGRES_PASSWORD: polarent
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - polarent-net
+
+  backend:
+    build: ./app/Polarent
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_USER: polarent
+      DB_PASSWORD: polarent
+    depends_on:
+      - db
+    networks:
+      - polarent-net
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - polarent-net
+
+volumes:
+  postgres_data:
+
+networks:
+  polarent-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.0.0/24
