@@ -1,4 +1,4 @@
-package com.tqs.polarent.services;
+package com.tqs.polarent.service;
 
 import com.tqs.polarent.dto.BookingRequestDTO;
 import com.tqs.polarent.dto.BookingResponseDTO;
