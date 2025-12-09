@@ -1,6 +1,9 @@
 package com.tqs.polarent.controller;
 
+import com.tqs.polarent.dto.ListingRequestDTO;
+import com.tqs.polarent.dto.ListingResponseDTO;
 import com.tqs.polarent.service.ListingService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import com.tqs.polarent.entity.Listing;
 
@@ -10,21 +13,19 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/listings")
+@RequiredArgsConstructor
 public class ListingController {
 
     private final ListingService listingService;
 
-    public ListingController(ListingService listingService) {
-        this.listingService = listingService;
-    }
-
     @GetMapping
-    public List<Listing> getAllBookings() {
-        return listingService.findAll();
+    public List<ListingResponseDTO> getEnabledListings() {
+        return listingService.getEnabledListings();
     }
 
-    @PostMapping("/add")
-    public Listing addListing(@RequestBody @Valid Listing listing) {
-        return listingService.save(listing);
+    @PostMapping
+    public ListingResponseDTO createListing(
+            @RequestBody @Valid ListingRequestDTO dto) {
+        return listingService.createListing(dto);
     }
 }
