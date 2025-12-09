@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,7 +28,7 @@ class ListingServiceTest {
         Listing listing = Listing.builder().id(1L).ownerId(10L).build();
         when(listingRepository.findById(1L)).thenReturn(Optional.of(listing));
 
-        listingService.deleteListing(1L, 10L);
+        listingService.deleteListing(10L, 1L);
 
         verify(listingRepository).delete(listing);
     }
@@ -37,19 +38,19 @@ class ListingServiceTest {
         Listing listing = Listing.builder().id(1L).ownerId(10L).build();
         when(listingRepository.findById(1L)).thenReturn(Optional.of(listing));
 
-        assertThatThrownBy(() -> listingService.deleteListing(1L, 99L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Only the owner can delete this listing");
+        assertThatThrownBy(() -> listingService.deleteListing(99L, 1L))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("User not authorized to delete this listing");
 
         verify(listingRepository, never()).delete(any());
     }
 
     @Test
     void whenDeleteListing_withNonExistentListing_thenThrowException() {
-        when(listingRepository.findById(1L)).thenReturn(Optional.empty());
+        when(listingRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> listingService.deleteListing(1L, 10L))
-                .isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> listingService.deleteListing(10L, 10L))
+                .isInstanceOf(RuntimeException.class)
                 .hasMessage("Listing not found");
 
         verify(listingRepository, never()).delete(any());

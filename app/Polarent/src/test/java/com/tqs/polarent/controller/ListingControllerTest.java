@@ -23,11 +23,11 @@ class ListingControllerTest {
 
     @Test
     void whenDeleteListing_thenReturn204() {
-        doNothing().when(listingService).deleteListing(1L, 10L);
+        doNothing().when(listingService).deleteListing(10L, 1L);
 
-        ResponseEntity<Void> response = listingController.deleteListing(1L, 10L);
+        ResponseEntity<Void> response = listingController.deleteListing(10L, 1L);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        verify(listingService).deleteListing(1L, 10L);
+        verify(listingService).deleteListing(10L, 1L);
     }
 }
