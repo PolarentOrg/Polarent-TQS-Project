@@ -1,4 +1,4 @@
-package com.tqs.polarent.service;
+package com.tqs.polarent.services;
 
 import com.tqs.polarent.dto.*;
 import com.tqs.polarent.entity.User;
