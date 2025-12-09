@@ -28,7 +28,7 @@ public class RequestService {
     }
 
     public List<RequestResponseDTO> getRequestsByListingAndRequester(Long listingId, Long requesterId) {
-        return requestRepository.findByListingAndRequesterId(listingId,requesterId).stream()
+        return requestRepository.findByListingIdAndRequesterId(listingId, requesterId).stream()
                 .map(requestMapper::toDto)
                 .collect(Collectors.toList());
     }
