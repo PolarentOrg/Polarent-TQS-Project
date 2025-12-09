@@ -13,7 +13,7 @@ jobs:
 
       - name: Deploy
         run: |
-          cd ~/polarent
+          cd ~/Polarent-TQS-Project
           git fetch origin
           git checkout dev
           git pull origin dev
