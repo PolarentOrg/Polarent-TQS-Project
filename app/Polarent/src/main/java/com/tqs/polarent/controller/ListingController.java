@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.tqs.polarent.entity.Listing;
-
+import org.springframework.http.ResponseEntity;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -38,4 +38,12 @@ public class ListingController {
     public ResponseEntity<ListingResponseDTO> patchListing(@PathVariable Long id, @RequestBody ListingResponseDTO dto) {
         return ResponseEntity.ok(listingService.patchListing(id, dto));
     }
+    @DeleteMapping("/{userId}/{listingId}")
+    public ResponseEntity<Void> deleteListing(
+            @PathVariable Long userId,
+            @PathVariable Long listingId) {
+        listingService.deleteListing(userId, listingId);
+        return ResponseEntity.noContent().build(); // 204 No Content
+    }
+
 }

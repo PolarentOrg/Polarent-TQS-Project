@@ -3,6 +3,7 @@ package com.tqs.polarent.controller;
 import com.tqs.polarent.dto.ListingResponseDTO;
 import com.tqs.polarent.services.ListingService;
 import org.junit.jupiter.api.BeforeEach;
+import com.tqs.polarent.services.ListingService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ListingControllerTest {
@@ -70,5 +73,13 @@ class ListingControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getTitle()).isEqualTo("Test Listing");
+    @Test
+    void whenDeleteListing_thenReturn204() {
+        doNothing().when(listingService).deleteListing(10L, 1L);
+
+        ResponseEntity<Void> response = listingController.deleteListing(10L, 1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        verify(listingService).deleteListing(10L, 1L);
     }
 }

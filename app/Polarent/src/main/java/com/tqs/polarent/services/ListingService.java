@@ -65,5 +65,15 @@ public class ListingService {
         if (dto.getEnabled() != null) listing.setEnabled(dto.getEnabled());
 
         return listingMapper.toDto(listingRepository.save(listing));
+    @Transactional
+    public void deleteListing(Long userId, Long listingId) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new RuntimeException("Listing not found"));
+
+        if (!listing.getOwnerId().equals(userId)) {
+            throw new RuntimeException("User not authorized to delete this listing");
+        }
+
+        listingRepository.delete(listing);
     }
 }
