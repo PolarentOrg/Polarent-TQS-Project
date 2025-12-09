@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polarent - Photo & Video Rentals</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Polarent</div>
+            <ul class="nav-links">
+                <li><a href="#listings">Listings</a></li>
+                <li><a href="#bookings">My Bookings</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero">
+            <h1>Rent Photo & Video Equipment</h1>
+            <p>Find the perfect gear for your next project</p>
+        </section>
+
+        <section id="listings">
+            <h2>Available Equipment</h2>
+            <div id="listings-container" class="grid"></div>
+        </section>
+
+        <section id="bookings" class="hidden">
+            <h2>My Bookings</h2>
+            <div id="bookings-container"></div>
+        </section>
+    </main>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
