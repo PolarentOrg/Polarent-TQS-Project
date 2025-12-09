@@ -1,6 +1,6 @@
 package com.tqs.polarent.controller;
 import com.tqs.polarent.dto.*;
-import com.tqs.polarent.service.ListingService;
+import com.tqs.polarent.services.ListingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,4 +19,13 @@ public class ListingController {
         List<ListingResponseDTO> listings = listingService.getEnabledListings();
         return ResponseEntity.ok(listings);
     }
+
+    @DeleteMapping("/{userId}/{listingId}")
+    public ResponseEntity<Void> deleteListing(
+            @PathVariable Long userId,
+            @PathVariable Long listingId) {
+        listingService.deleteListing(userId, listingId);
+        return ResponseEntity.noContent().build(); // 204 No Content
+    }
+
 }
