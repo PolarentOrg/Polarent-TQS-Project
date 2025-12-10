@@ -106,4 +106,14 @@ class RequestControllerTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Listing not found");
     }
+
+    @Test
+    void whenDeleteRequest_thenReturn204() {
+        doNothing().when(requestService).deleteRequest(1L);
+
+        ResponseEntity<Void> response = requestController.deleteRequest(1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        verify(requestService).deleteRequest(1L);
+    }
 }
