@@ -1,5 +1,5 @@
 // State
-let currentUserId = 1;
+let currentUser = null;
 let allListings = [];
 
 // DOM Elements
@@ -9,20 +9,104 @@ const closeBtn = document.querySelector('.close');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    setupAuth();
     setupNavigation();
     setupModal();
-    setupUserIdInput();
-    loadListings();
+    checkSession();
 });
+
+// Auth
+function setupAuth() {
+    // Tab switching
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('login-form').style.display = tab.dataset.tab === 'login' ? 'block' : 'none';
+            document.getElementById('register-form').style.display = tab.dataset.tab === 'register' ? 'block' : 'none';
+        });
+    });
+
+    // Login
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        try {
+            const user = await api.login(email, password);
+            loginSuccess(user);
+        } catch (err) {
+            showToast('Invalid email or password', 'error');
+        }
+    });
+
+    // Register
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            firstName: document.getElementById('register-firstname').value,
+            lastName: document.getElementById('register-lastname').value,
+            email: document.getElementById('register-email').value,
+            password: document.getElementById('register-password').value
+        };
+        try {
+            const user = await api.register(data);
+            loginSuccess(user);
+        } catch (err) {
+            showToast('Registration failed. Email may already exist.', 'error');
+        }
+    });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', logout);
+}
+
+function loginSuccess(user) {
+    currentUser = user;
+    sessionStorage.setItem('user', JSON.stringify(user));
+    showApp();
+    showToast(`Welcome, ${user.firstName}!`);
+}
+
+function logout() {
+    currentUser = null;
+    sessionStorage.removeItem('user');
+    showAuth();
+}
+
+function checkSession() {
+    const saved = sessionStorage.getItem('user');
+    if (saved) {
+        currentUser = JSON.parse(saved);
+        showApp();
+    } else {
+        showAuth();
+    }
+}
+
+function showAuth() {
+    document.getElementById('auth-page').classList.add('active');
+    document.getElementById('listings-page').classList.remove('active');
+    document.getElementById('nav-links').style.display = 'none';
+    document.getElementById('user-info').style.display = 'none';
+}
+
+function showApp() {
+    document.getElementById('auth-page').classList.remove('active');
+    document.getElementById('nav-links').style.display = 'flex';
+    document.getElementById('user-info').style.display = 'flex';
+    document.getElementById('user-display').textContent = `${currentUser.firstName} (${currentUser.role})`;
+    showPage('listings');
+}
 
 // Navigation
 function setupNavigation() {
-    document.querySelectorAll('.nav-links a').forEach(link => {
+    document.querySelectorAll('#nav-links a').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const page = e.target.dataset.page;
             showPage(page);
-            document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('#nav-links a').forEach(l => l.classList.remove('active'));
             e.target.classList.add('active');
         });
     });
@@ -37,13 +121,6 @@ function showPage(page) {
     else if (page === 'my-listings') loadMyListings();
     else if (page === 'bookings') loadBookings();
     else if (page === 'requests') loadRequestsPage();
-}
-
-// User ID
-function setupUserIdInput() {
-    document.getElementById('user-id').addEventListener('change', (e) => {
-        currentUserId = parseInt(e.target.value) || 1;
-    });
 }
 
 // Modal
@@ -82,8 +159,7 @@ async function loadListings() {
 
 async function loadMyListings() {
     try {
-        const listings = await api.getListings();
-        const myListings = listings.filter(l => l.ownerId === currentUserId);
+        const myListings = await api.getMyListings(currentUser.userId);
         renderListings(myListings, 'my-listings-container', true);
     } catch (e) {
         showToast('Failed to load listings', 'error');
@@ -106,6 +182,7 @@ function renderListings(listings, containerId, isOwner) {
             <div class="card-footer">
                 <span class="price">€${l.dailyRate.toFixed(2)}/day</span>
                 ${isOwner ? `
+                    <button class="btn btn-secondary btn-sm" onclick="showEditListingModal(${l.id})">Edit</button>
                     <button class="btn btn-danger btn-sm" onclick="deleteListing(${l.id})">Delete</button>
                 ` : `
                     <button class="btn btn-primary btn-sm" onclick="showRentModal(${l.id})">Rent</button>
@@ -144,7 +221,7 @@ async function createListing(e) {
     e.preventDefault();
     const form = e.target;
     const data = {
-        ownerId: currentUserId,
+        ownerId: currentUser.userId,
         title: form.title.value,
         description: form.description.value,
         dailyRate: parseFloat(form.dailyRate.value),
@@ -163,7 +240,7 @@ async function createListing(e) {
 async function deleteListing(listingId) {
     if (!confirm('Delete this listing?')) return;
     try {
-        await api.deleteListing(currentUserId, listingId);
+        await api.deleteListing(currentUser.userId, listingId);
         showToast('Listing deleted');
         loadMyListings();
     } catch (e) {
@@ -205,16 +282,76 @@ function showRentModal(listingId) {
 async function submitRentRequest(e, listing) {
     e.preventDefault();
     const form = e.target;
-    // Note: The API doesn't have a create request endpoint exposed in the controller
-    // This would need to be added to the backend. For now, show info message.
-    showToast('Request submitted! (Backend endpoint needed)', 'info');
-    closeModal();
+    const data = {
+        listingId: listing.id,
+        requesterId: currentUser.userId,
+        initialDate: parseInt(form.initialDate.value),
+        duration: parseInt(form.duration.value),
+        note: form.note.value || null
+    };
+    try {
+        await api.createRequest(data);
+        showToast('Request submitted!');
+        closeModal();
+    } catch (err) {
+        showToast('Failed to submit request', 'error');
+    }
+}
+
+async function showEditListingModal(listingId) {
+    const listings = await api.getMyListings(currentUser.userId);
+    const listing = listings.find(l => l.id === listingId);
+    if (!listing) return;
+    
+    openModal(`
+        <h3>Edit Listing</h3>
+        <form id="edit-listing-form">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" name="title" value="${escapeHtml(listing.title)}" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" rows="3">${escapeHtml(listing.description || '')}</textarea>
+            </div>
+            <div class="form-group">
+                <label>Daily Rate (€)</label>
+                <input type="number" name="dailyRate" step="0.01" min="0.01" value="${listing.dailyRate}" required>
+            </div>
+            <div class="form-group">
+                <label><input type="checkbox" name="enabled" ${listing.enabled ? 'checked' : ''}> Available for rent</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    `);
+    document.getElementById('edit-listing-form').addEventListener('submit', (e) => updateListing(e, listingId));
+}
+
+async function updateListing(e, listingId) {
+    e.preventDefault();
+    const form = e.target;
+    const data = {
+        id: listingId,
+        ownerId: currentUser.userId,
+        title: form.title.value,
+        description: form.description.value,
+        dailyRate: parseFloat(form.dailyRate.value),
+        enabled: form.enabled.checked
+    };
+    try {
+        await api.updateListing(listingId, data);
+        showToast('Listing updated!');
+        closeModal();
+        loadMyListings();
+    } catch (err) {
+        showToast('Failed to update listing', 'error');
+    }
 }
 
 // Bookings
 async function loadBookings() {
     try {
-        const bookings = await api.getBookingsByRenter(currentUserId);
+        const bookings = await api.getBookingsByRenter(currentUser.userId);
         renderBookings(bookings);
     } catch (e) {
         showToast('Failed to load bookings', 'error');
@@ -275,7 +412,7 @@ async function cancelBooking(id) {
 async function loadRequestsPage() {
     try {
         const listings = await api.getListings();
-        const myListings = listings.filter(l => l.ownerId === currentUserId);
+        const myListings = listings.filter(l => l.ownerId === currentUser.userId);
         const select = document.getElementById('listing-select');
         select.innerHTML = myListings.length 
             ? myListings.map(l => `<option value="${l.id}">${escapeHtml(l.title)}</option>`).join('')

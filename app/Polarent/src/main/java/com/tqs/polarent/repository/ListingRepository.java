@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ListingRepository extends JpaRepository<Listing, Long> {
     List<Listing> findByEnabledTrue();
+    List<Listing> findByOwnerId(Long ownerId);
 }

@@ -2,6 +2,7 @@ package com.tqs.polarent.controller;
 
 import com.tqs.polarent.dto.BookingRequestDTO;
 import com.tqs.polarent.dto.BookingResponseDTO;
+import com.tqs.polarent.dto.RequestRequestDTO;
 import com.tqs.polarent.dto.RequestResponseDTO;
 import com.tqs.polarent.entity.Listing;
 import com.tqs.polarent.repository.ListingRepository;
@@ -25,6 +26,11 @@ public class RequestController {
     public ResponseEntity<List<RequestResponseDTO>> getRequestsByListing(@PathVariable Long listingId) {
         List<RequestResponseDTO> requests = requestService.getRequestsByListing(listingId);
         return ResponseEntity.ok(requests);
+    }
+
+    @PostMapping
+    public ResponseEntity<RequestResponseDTO> createRequest(@RequestBody RequestRequestDTO dto) {
+        return ResponseEntity.status(201).body(requestService.createRequest(dto));
     }
 
     @PostMapping("/accept")

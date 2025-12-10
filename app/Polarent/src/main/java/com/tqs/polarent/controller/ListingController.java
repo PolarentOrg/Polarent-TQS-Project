@@ -18,9 +18,19 @@ public class ListingController {
 
     private final ListingService listingService;
 
+    @GetMapping
+    public ResponseEntity<List<ListingResponseDTO>> getAllListings() {
+        return ResponseEntity.ok(listingService.getAllListings());
+    }
+
     @GetMapping("/enabled")
     public ResponseEntity<List<ListingResponseDTO>> getEnabledListings() {
         return ResponseEntity.ok(listingService.getEnabledListings());
+    }
+
+    @GetMapping("/owner/{ownerId}")
+    public ResponseEntity<List<ListingResponseDTO>> getListingsByOwner(@PathVariable Long ownerId) {
+        return ResponseEntity.ok(listingService.getListingsByOwner(ownerId));
     }
 
     @PostMapping
