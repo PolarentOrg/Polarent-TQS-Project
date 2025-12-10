@@ -20,7 +20,6 @@ public class ListingService {
 
     private final ListingRepository listingRepository;
     private final UserRepository userRepository;
-    
     private final ListingMapper listingMapper;
 
     public List<ListingResponseDTO> getEnabledListings() {

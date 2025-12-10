@@ -38,13 +38,6 @@ public class ListingController {
     public ResponseEntity<ListingResponseDTO> patchListing(@PathVariable Long id, @RequestBody ListingResponseDTO dto) {
         return ResponseEntity.ok(listingService.patchListing(id, dto));
     }
-    @GetMapping("/search")
-    public ResponseEntity<List<ListingResponseDTO>> searchListings(
-            @RequestParam(value = "q", required = false) String searchTerm) {
-
-        List<ListingResponseDTO> listings = listingService.searchListings(searchTerm);
-        return ResponseEntity.ok(listings);
-    }
     @DeleteMapping("/{userId}/{listingId}")
     public ResponseEntity<Void> deleteListing(
             @PathVariable Long userId,
@@ -52,5 +45,11 @@ public class ListingController {
         listingService.deleteListing(userId, listingId);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<ListingResponseDTO>> searchListings(
+            @RequestParam(value = "q", required = false) String searchTerm) {
 
+        List<ListingResponseDTO> listings = listingService.searchListings(searchTerm);
+        return ResponseEntity.ok(listings);
+    }
 }
