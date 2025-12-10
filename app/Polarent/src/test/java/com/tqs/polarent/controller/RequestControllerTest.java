@@ -17,12 +17,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class RequestControllerTest {
@@ -61,6 +62,27 @@ class RequestControllerTest {
         bookingResponseDTO.setRequestId(1L);
         bookingResponseDTO.setPrice(150.0);
         bookingResponseDTO.setStatus(Status.PENDING);
+    }
+
+    @Test
+    void whenGetRequestsByListing_thenReturn200() {
+        when(requestService.getRequestsByListing(10L)).thenReturn(List.of(requestDto));
+
+        ResponseEntity<List<RequestResponseDTO>> response = requestController.getRequestsByListing(10L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(1);
+        assertThat(response.getBody().get(0).getId()).isEqualTo(1L);
+    }
+
+    @Test
+    void whenGetRequestsByListing_withNoRequests_thenReturnEmptyList() {
+        when(requestService.getRequestsByListing(99L)).thenReturn(List.of());
+
+        ResponseEntity<List<RequestResponseDTO>> response = requestController.getRequestsByListing(99L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEmpty();
     }
 
     @Test

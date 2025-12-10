@@ -33,5 +33,12 @@ public class RequestService {
                 .collect(Collectors.toList());
     }
 
+    public void deleteRequest(Long id) {
+        if (!requestRepository.existsById(id)) {
+            throw new IllegalArgumentException("Request not found");
+        }
+        requestRepository.deleteById(id);
+    }
+
 
 }
