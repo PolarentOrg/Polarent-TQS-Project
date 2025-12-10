@@ -65,6 +65,8 @@ public class ListingService {
         if (dto.getEnabled() != null) listing.setEnabled(dto.getEnabled());
 
         return listingMapper.toDto(listingRepository.save(listing));
+    }
+
     @Transactional
     public void deleteListing(Long userId, Long listingId) {
         Listing listing = listingRepository.findById(listingId)

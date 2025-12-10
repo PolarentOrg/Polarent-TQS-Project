@@ -73,6 +73,8 @@ class ListingControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getTitle()).isEqualTo("Test Listing");
+    }
+
     @Test
     void whenDeleteListing_thenReturn204() {
         doNothing().when(listingService).deleteListing(10L, 1L);
