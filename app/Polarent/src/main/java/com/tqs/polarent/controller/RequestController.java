@@ -39,7 +39,7 @@ public class RequestController {
         return ResponseEntity.ok(bookingService.createBooking(bookingRequest));
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRequest(@PathVariable Long id) {
         requestService.deleteRequest(id);
         return ResponseEntity.noContent().build();
