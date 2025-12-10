@@ -2,6 +2,7 @@ package com.tqs.polarent.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -15,28 +16,27 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Listing {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;                     // unique id
+    private Long id;
 
-    @NotBlank(message = "Owner ID is required")
+    @NotNull(message = "Owner ID is required")
     @Column(nullable = false)
-    private Long ownerId;                // user who owns this listing
+    private Long ownerId;
 
-    @NotBlank(message = "Title is required")
     @Column(nullable = false)
-    private String title;               // title
+    private String title;
 
-    @Column
-    private String description;         // description
+    private String description;
 
-    @NotBlank(message = "Daily rate is required")
+    @NotNull(message = "Daily rate is required")
     @Column(nullable = false)
-    private Double dailyRate;           // amount the user has to pay per day
+    private Double dailyRate;
 
-    @NotBlank(message = "Visibility is required")
+    @NotNull(message = "Visibility is required")
     @Column(nullable = false)
-    private Boolean enabled;            // weather this listing is enabled or disabled (aka. visible or invisible)
+    private Boolean enabled;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -44,3 +44,4 @@ public class Listing {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 }
+

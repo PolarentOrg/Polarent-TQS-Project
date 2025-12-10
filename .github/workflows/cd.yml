@@ -6,16 +6,16 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: [self-hosted, dev]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Deploy
         run: |
-          cd ~/Polarent-TQS-Project
+          cd ~/Polarent-DEV
           git fetch origin
           git checkout dev
           git pull origin dev
-          docker compose down
+          docker compose down -v
           docker compose up -d --build

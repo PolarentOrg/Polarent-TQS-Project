@@ -3,7 +3,6 @@ package com.tqs.polarent.entity;
 import com.tqs.polarent.enums.Status;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -21,17 +20,14 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;                             // unique id
 
-    @NotBlank(message = "Request ID is required")
     @Column(nullable = false)
-    private Long requestId;                      // request which "evolved" into a booking (aka. got accepted by the listing owner)
+    private Long requestId;
 
-    @NotBlank(message = "Price is required")
     @Column(nullable = false)
-    private Double price;                       // total price
+    private Double price;
 
-    @NotBlank(message = "Status is required")
     @Column(nullable = false)
-    private Status status = Status.PENDING;
+    private Status status;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
