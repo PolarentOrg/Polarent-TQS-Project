@@ -1,4 +1,4 @@
-    package com.tqs.polarent.repository;
+package com.tqs.polarent.repository;
 
 import com.tqs.polarent.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
