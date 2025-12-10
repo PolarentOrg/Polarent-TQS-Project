@@ -1,6 +1,7 @@
 package com.tqs.polarent.enums;
 
 public enum Role {
-    USER,
+    OWNER,
+    RENTER,
     ADMIN
 }
