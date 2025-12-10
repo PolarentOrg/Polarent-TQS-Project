@@ -3,6 +3,7 @@ import com.tqs.polarent.dto.*;
 import com.tqs.polarent.services.ListingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.tqs.polarent.entity.Listing;
 import org.springframework.http.ResponseEntity;
@@ -17,17 +18,26 @@ public class ListingController {
 
     private final ListingService listingService;
 
-    @GetMapping
-    public List<ListingResponseDTO> getEnabledListings() {
-        return listingService.getEnabledListings();
+    @GetMapping("/enabled")
+    public ResponseEntity<List<ListingResponseDTO>> getEnabledListings() {
+        return ResponseEntity.ok(listingService.getEnabledListings());
     }
 
     @PostMapping
-    public ListingResponseDTO createListing(
-            @RequestBody @Valid ListingRequestDTO dto) {
+    public ListingResponseDTO createListing(@RequestBody @Valid
+    ListingRequestDTO dto) {
         return listingService.createListing(dto);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ListingResponseDTO> updateListing(@PathVariable Long id, @RequestBody ListingResponseDTO dto) {
+        return ResponseEntity.ok(listingService.updateListing(id, dto));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ListingResponseDTO> patchListing(@PathVariable Long id, @RequestBody ListingResponseDTO dto) {
+        return ResponseEntity.ok(listingService.patchListing(id, dto));
+    }
     @DeleteMapping("/{userId}/{listingId}")
     public ResponseEntity<Void> deleteListing(
             @PathVariable Long userId,
