@@ -27,6 +27,12 @@ public class RequestService {
                 .collect(Collectors.toList());
     }
 
+    public RequestResponseDTO getRequestById(Long id) {
+        Request request = requestRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Request not found"));
+        return requestMapper.toDto(request);
+    }
+
     public List<RequestResponseDTO> getRequestsByListingAndRequester(Long listingId, Long requesterId) {
         return requestRepository.findByListingIdAndRequesterId(listingId, requesterId).stream()
                 .map(requestMapper::toDto)

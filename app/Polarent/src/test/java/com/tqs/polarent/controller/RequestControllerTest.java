@@ -86,6 +86,17 @@ class RequestControllerTest {
     }
 
     @Test
+    void whenGetRequestById_thenReturn200() {
+        when(requestService.getRequestById(1L)).thenReturn(requestDto);
+
+        ResponseEntity<RequestResponseDTO> response = requestController.getRequestById(1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getId()).isEqualTo(1L);
+    }
+
+    @Test
     void whenConvertToBooking_thenReturn200() {
         when(listingRepository.findById(10L)).thenReturn(Optional.of(listing));
         when(bookingService.createBooking(any(BookingRequestDTO.class))).thenReturn(bookingResponseDTO);

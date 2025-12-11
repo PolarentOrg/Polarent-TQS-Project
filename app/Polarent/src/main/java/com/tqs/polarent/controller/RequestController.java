@@ -27,6 +27,13 @@ public class RequestController {
         return ResponseEntity.ok(requests);
     }
 
+    @GetMapping("/{requestId}")
+    public ResponseEntity<RequestResponseDTO> getRequestById(@PathVariable Long requestId) {
+        RequestResponseDTO request = requestService.getRequestById(requestId);
+        return ResponseEntity.ok(request);
+    }
+    
+
     @PostMapping("/accept")
     public ResponseEntity<BookingResponseDTO> convertToBooking(@RequestBody RequestResponseDTO requestDto) {
         Listing listing = listingRepository.findById(requestDto.getListingId())
