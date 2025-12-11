@@ -22,4 +22,7 @@ public class ListingRequestDTO {
 
     @NotNull(message = "Visibility is required")
     private Boolean enabled;
+
+    private String city;
+    private String district;
 }
