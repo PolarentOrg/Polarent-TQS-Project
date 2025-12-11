@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface ListingRepository extends JpaRepository<Listing, Long> {
     List<Listing> findByEnabledTrue();
+    List<Listing> findByOwnerId(Long ownerId);
     @Query("SELECT l FROM Listing l WHERE l.enabled = true AND " +
             "(LOWER(l.title) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
             "LOWER(l.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
