@@ -152,9 +152,45 @@ async function loadListings() {
     try {
         allListings = await api.getListings();
         renderListings(allListings, 'listings-container', false);
+        await loadFilterOptions();
+        setupFilters();
     } catch (e) {
         showToast('Failed to load listings', 'error');
     }
+}
+
+async function loadFilterOptions() {
+    const [cities, districts] = await Promise.all([api.getCities(), api.getDistricts()]);
+    document.getElementById('filter-city').innerHTML = '<option value="">All Cities</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+    document.getElementById('filter-district').innerHTML = '<option value="">All Districts</option>' + districts.map(d => `<option value="${d}">${d}</option>`).join('');
+}
+
+function setupFilters() {
+    document.getElementById('filter-btn').onclick = applyFilters;
+    document.getElementById('clear-filter-btn').onclick = clearFilters;
+}
+
+async function applyFilters() {
+    const params = {
+        min: document.getElementById('filter-min').value || null,
+        max: document.getElementById('filter-max').value || null,
+        city: document.getElementById('filter-city').value || null,
+        district: document.getElementById('filter-district').value || null
+    };
+    try {
+        const filtered = await api.filterAdvanced(params);
+        renderListings(filtered, 'listings-container', false);
+    } catch (e) {
+        showToast('Filter failed', 'error');
+    }
+}
+
+async function clearFilters() {
+    document.getElementById('filter-min').value = '';
+    document.getElementById('filter-max').value = '';
+    document.getElementById('filter-city').value = '';
+    document.getElementById('filter-district').value = '';
+    await loadListings();
 }
 
 async function loadMyListings() {
@@ -179,6 +215,7 @@ function renderListings(listings, containerId, isOwner) {
                 <span class="badge ${l.enabled ? 'badge-success' : 'badge-warning'}">${l.enabled ? 'Available' : 'Unavailable'}</span>
             </div>
             <p class="description">${escapeHtml(l.description || 'No description')}</p>
+            ${l.city || l.district ? `<p class="location">📍 ${escapeHtml([l.city, l.district].filter(Boolean).join(', '))}</p>` : ''}
             <div class="card-footer">
                 <span class="price">€${l.dailyRate.toFixed(2)}/day</span>
                 ${isOwner ? `
@@ -209,6 +246,14 @@ function showCreateListingModal() {
                 <input type="number" name="dailyRate" step="0.01" min="0.01" required>
             </div>
             <div class="form-group">
+                <label>City</label>
+                <input type="text" name="city">
+            </div>
+            <div class="form-group">
+                <label>District</label>
+                <input type="text" name="district">
+            </div>
+            <div class="form-group">
                 <label><input type="checkbox" name="enabled" checked> Available for rent</label>
             </div>
             <button type="submit" class="btn btn-primary">Create</button>
@@ -225,6 +270,8 @@ async function createListing(e) {
         title: form.title.value,
         description: form.description.value,
         dailyRate: parseFloat(form.dailyRate.value),
+        city: form.city.value || null,
+        district: form.district.value || null,
         enabled: form.enabled.checked
     };
     try {
@@ -319,6 +366,14 @@ async function showEditListingModal(listingId) {
                 <input type="number" name="dailyRate" step="0.01" min="0.01" value="${listing.dailyRate}" required>
             </div>
             <div class="form-group">
+                <label>City</label>
+                <input type="text" name="city" value="${escapeHtml(listing.city || '')}">
+            </div>
+            <div class="form-group">
+                <label>District</label>
+                <input type="text" name="district" value="${escapeHtml(listing.district || '')}">
+            </div>
+            <div class="form-group">
                 <label><input type="checkbox" name="enabled" ${listing.enabled ? 'checked' : ''}> Available for rent</label>
             </div>
             <button type="submit" class="btn btn-primary">Save</button>
@@ -336,6 +391,8 @@ async function updateListing(e, listingId) {
         title: form.title.value,
         description: form.description.value,
         dailyRate: parseFloat(form.dailyRate.value),
+        city: form.city.value || null,
+        district: form.district.value || null,
         enabled: form.enabled.checked
     };
     try {
