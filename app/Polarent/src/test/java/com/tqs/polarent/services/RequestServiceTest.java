@@ -1,5 +1,6 @@
 package com.tqs.polarent.services;
 
+import com.tqs.polarent.dto.RequestRequestDTO;
 import com.tqs.polarent.dto.RequestResponseDTO;
 import com.tqs.polarent.entity.Request;
 import com.tqs.polarent.mapper.RequestMapper;
@@ -119,5 +120,23 @@ class RequestServiceTest {
         assertThatThrownBy(() -> requestService.deleteRequest(99L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Request not found");
+    }
+
+    @Test
+    void whenCreateRequest_thenReturnCreatedRequest() {
+        RequestRequestDTO dto = new RequestRequestDTO();
+        dto.setListingId(10L);
+        dto.setRequesterId(5L);
+        dto.setInitialDate(20251210);
+        dto.setDuration(3);
+
+        when(requestMapper.toEntity(dto)).thenReturn(request);
+        when(requestRepository.save(request)).thenReturn(request);
+        when(requestMapper.toDto(request)).thenReturn(requestResponseDTO);
+
+        RequestResponseDTO result = requestService.createRequest(dto);
+
+        assertThat(result.getListingId()).isEqualTo(10L);
+        verify(requestRepository).save(request);
     }
 }

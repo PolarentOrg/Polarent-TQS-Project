@@ -2,6 +2,7 @@ package com.tqs.polarent.controller;
 
 import com.tqs.polarent.dto.BookingRequestDTO;
 import com.tqs.polarent.dto.BookingResponseDTO;
+import com.tqs.polarent.dto.RequestRequestDTO;
 import com.tqs.polarent.dto.RequestResponseDTO;
 import com.tqs.polarent.entity.Listing;
 import com.tqs.polarent.enums.Status;
@@ -126,5 +127,18 @@ class RequestControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         verify(requestService).deleteRequest(1L);
+    }
+
+    @Test
+    void whenCreateRequest_thenReturn201() {
+        RequestRequestDTO requestRequestDTO = new RequestRequestDTO();
+        requestRequestDTO.setListingId(10L);
+        requestRequestDTO.setRequesterId(5L);
+        when(requestService.createRequest(any(RequestRequestDTO.class))).thenReturn(requestDto);
+
+        ResponseEntity<RequestResponseDTO> response = requestController.createRequest(requestRequestDTO);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody().getId()).isEqualTo(1L);
     }
 }
