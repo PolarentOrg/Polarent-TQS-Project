@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @SpringBootApplication
 public class PolarentApplication {
 
-    @Value("${cors.allowed-origins:http://localhost:8081,http://localhost:3000,http://localhost:5173}")
+    @Value("${cors.allowed-origins:http://localhost:8080,http://localhost:8081,http://localhost:3000,http://localhost:5173}")
     private String[] allowedOrigins;
     
     @Value("${cors.allowed-methods:GET,POST,PUT,DELETE,PATCH,OPTIONS}")
