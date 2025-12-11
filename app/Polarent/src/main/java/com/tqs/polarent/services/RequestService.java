@@ -27,6 +27,12 @@ public class RequestService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public RequestResponseDTO createRequest(RequestRequestDTO dto) {
+        Request request = requestMapper.toEntity(dto);
+        return requestMapper.toDto(requestRepository.save(request));
+    }
+
     public List<RequestResponseDTO> getRequestsByListingAndRequester(Long listingId, Long requesterId) {
         return requestRepository.findByListingIdAndRequesterId(listingId, requesterId).stream()
                 .map(requestMapper::toDto)
