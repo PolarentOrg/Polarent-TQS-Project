@@ -1,13 +1,11 @@
 package com.tqs.polarent.controller;
+
 import com.tqs.polarent.dto.*;
 import com.tqs.polarent.services.ListingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.tqs.polarent.entity.Listing;
-import org.springframework.http.ResponseEntity;
-import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -34,8 +32,7 @@ public class ListingController {
     }
 
     @PostMapping
-    public ListingResponseDTO createListing(@RequestBody @Valid
-    ListingRequestDTO dto) {
+    public ListingResponseDTO createListing(@RequestBody @Valid ListingRequestDTO dto) {
         return listingService.createListing(dto);
     }
 
@@ -48,58 +45,54 @@ public class ListingController {
     public ResponseEntity<ListingResponseDTO> patchListing(@PathVariable Long id, @RequestBody ListingResponseDTO dto) {
         return ResponseEntity.ok(listingService.patchListing(id, dto));
     }
+
     @DeleteMapping("/{userId}/{listingId}")
-    public ResponseEntity<Void> deleteListing(
-            @PathVariable Long userId,
-            @PathVariable Long listingId) {
+    public ResponseEntity<Void> deleteListing(@PathVariable Long userId, @PathVariable Long listingId) {
         listingService.deleteListing(userId, listingId);
-        return ResponseEntity.noContent().build(); // 204 No Content
+        return ResponseEntity.noContent().build();
     }
 
+    // Search
+    @GetMapping("/search")
+    public ResponseEntity<List<ListingResponseDTO>> searchListings(
+            @RequestParam(value = "q", required = false) String searchTerm) {
+        return ResponseEntity.ok(listingService.searchListings(searchTerm));
+    }
+
+    // Filters
     @GetMapping("/filter/price")
     public ResponseEntity<List<ListingResponseDTO>> filterByPriceRange(
             @RequestParam(value = "min", required = false) Double minPrice,
             @RequestParam(value = "max", required = false) Double maxPrice) {
-
         return ResponseEntity.ok(listingService.filterByPriceRange(minPrice, maxPrice));
     }
 
-    // por preço máximo
     @GetMapping("/filter/max-price/{maxPrice}")
-    public ResponseEntity<List<ListingResponseDTO>> filterByMaxPrice(
-            @PathVariable Double maxPrice) {
-
+    public ResponseEntity<List<ListingResponseDTO>> filterByMaxPrice(@PathVariable Double maxPrice) {
         return ResponseEntity.ok(listingService.filterByMaxPrice(maxPrice));
     }
 
-    // por preço mínimo
     @GetMapping("/filter/min-price/{minPrice}")
-    public ResponseEntity<List<ListingResponseDTO>> filterByMinPrice(
-            @PathVariable Double minPrice) {
-
+    public ResponseEntity<List<ListingResponseDTO>> filterByMinPrice(@PathVariable Double minPrice) {
         return ResponseEntity.ok(listingService.filterByMinPrice(minPrice));
     }
 
-    // por cidade (exact match)
     @GetMapping("/filter/city/{city}")
     public ResponseEntity<List<ListingResponseDTO>> filterByCity(@PathVariable String city) {
         return ResponseEntity.ok(listingService.filterByCity(city));
     }
 
-    // por cidade (partial match)
     @GetMapping("/search/city")
     public ResponseEntity<List<ListingResponseDTO>> searchByCity(
             @RequestParam(value = "city", required = false) String city) {
         return ResponseEntity.ok(listingService.searchByCity(city));
     }
 
-    // por distrito
     @GetMapping("/filter/district/{district}")
     public ResponseEntity<List<ListingResponseDTO>> filterByDistrict(@PathVariable String district) {
         return ResponseEntity.ok(listingService.filterByDistrict(district));
     }
 
-    // preço + cidade
     @GetMapping("/filter/price-city")
     public ResponseEntity<List<ListingResponseDTO>> filterByPriceAndCity(
             @RequestParam(value = "min", required = false) Double minPrice,
@@ -108,7 +101,6 @@ public class ListingController {
         return ResponseEntity.ok(listingService.filterByPriceAndCity(minPrice, maxPrice, city));
     }
 
-    // Filtro avançado
     @GetMapping("/filter/advanced")
     public ResponseEntity<List<ListingResponseDTO>> filterAdvanced(
             @RequestParam(value = "min", required = false) Double minPrice,
@@ -118,13 +110,11 @@ public class ListingController {
         return ResponseEntity.ok(listingService.filterAdvanced(minPrice, maxPrice, city, district));
     }
 
-    // cidades disponíveis
     @GetMapping("/cities")
     public ResponseEntity<List<String>> getAllCities() {
         return ResponseEntity.ok(listingService.getAllCities());
     }
 
-    // distritos disponíveis
     @GetMapping("/districts")
     public ResponseEntity<List<String>> getAllDistricts() {
         return ResponseEntity.ok(listingService.getAllDistricts());

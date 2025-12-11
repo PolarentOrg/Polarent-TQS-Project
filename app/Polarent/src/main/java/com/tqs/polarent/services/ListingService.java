@@ -5,7 +5,6 @@ import com.tqs.polarent.entity.Listing;
 import com.tqs.polarent.mapper.ListingMapper;
 import com.tqs.polarent.repository.ListingRepository;
 import com.tqs.polarent.repository.UserRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,26 +19,22 @@ public class ListingService {
 
     private final ListingRepository listingRepository;
     private final UserRepository userRepository;
-    
     private final ListingMapper listingMapper;
 
     public List<ListingResponseDTO> getAllListings() {
-        return listingRepository.findAll()
-                .stream()
+        return listingRepository.findAll().stream()
                 .map(listingMapper::toDto)
                 .toList();
     }
 
     public List<ListingResponseDTO> getEnabledListings() {
-        return listingRepository.findByEnabledTrue()
-                .stream()
+        return listingRepository.findByEnabledTrue().stream()
                 .map(listingMapper::toDto)
                 .toList();
     }
 
     public List<ListingResponseDTO> getListingsByOwner(Long ownerId) {
-        return listingRepository.findByOwnerId(ownerId)
-                .stream()
+        return listingRepository.findByOwnerId(ownerId).stream()
                 .map(listingMapper::toDto)
                 .toList();
     }
@@ -49,35 +44,29 @@ public class ListingService {
         if (!userRepository.existsById(dto.getOwnerId())) {
             throw new IllegalArgumentException("Owner not found");
         }
-
         Listing listing = listingMapper.toEntity(dto);
-
-        return listingMapper.toDto(
-                listingRepository.save(listing)
-        );
+        return listingMapper.toDto(listingRepository.save(listing));
     }
 
+    @Transactional
     public ListingResponseDTO updateListing(Long id, ListingResponseDTO dto) {
         Listing listing = listingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Listing not found"));
-
         listing.setTitle(dto.getTitle());
         listing.setDescription(dto.getDescription());
         listing.setDailyRate(dto.getDailyRate());
         listing.setEnabled(dto.getEnabled());
-
         return listingMapper.toDto(listingRepository.save(listing));
     }
 
+    @Transactional
     public ListingResponseDTO patchListing(Long id, ListingResponseDTO dto) {
         Listing listing = listingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Listing not found"));
-
         if (dto.getTitle() != null) listing.setTitle(dto.getTitle());
         if (dto.getDescription() != null) listing.setDescription(dto.getDescription());
         if (dto.getDailyRate() != null) listing.setDailyRate(dto.getDailyRate());
         if (dto.getEnabled() != null) listing.setEnabled(dto.getEnabled());
-
         return listingMapper.toDto(listingRepository.save(listing));
     }
 
@@ -85,45 +74,46 @@ public class ListingService {
     public void deleteListing(Long userId, Long listingId) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new RuntimeException("Listing not found"));
-
         if (!listing.getOwnerId().equals(userId)) {
             throw new RuntimeException("User not authorized to delete this listing");
         }
-
         listingRepository.delete(listing);
     }
 
+    // Search
+    public List<ListingResponseDTO> searchListings(String searchTerm) {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return getEnabledListings();
+        }
+        return listingRepository.searchByTerm(searchTerm.trim()).stream()
+                .map(listingMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    // Filters
     public List<ListingResponseDTO> filterByPriceRange(Double minPrice, Double maxPrice) {
         if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
             throw new IllegalArgumentException("Minimum price cannot be greater than maximum price");
         }
-
-        List<Listing> listings = listingRepository.filterByPriceRange(minPrice, maxPrice);
-        return listings.stream()
+        return listingRepository.filterByPriceRange(minPrice, maxPrice).stream()
                 .map(listingMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    //Filtrar por preço máximo
     public List<ListingResponseDTO> filterByMaxPrice(Double maxPrice) {
         if (maxPrice == null || maxPrice <= 0) {
             return getEnabledListings();
         }
-
-        List<Listing> listings = listingRepository.findByDailyRateLessThanEqualAndEnabledTrue(maxPrice);
-        return listings.stream()
+        return listingRepository.findByDailyRateLessThanEqualAndEnabledTrue(maxPrice).stream()
                 .map(listingMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    // Filtrar por preço mínimo
     public List<ListingResponseDTO> filterByMinPrice(Double minPrice) {
         if (minPrice == null || minPrice < 0) {
             return getEnabledListings();
         }
-
-        List<Listing> listings = listingRepository.findByDailyRateGreaterThanEqualAndEnabledTrue(minPrice);
-        return listings.stream()
+        return listingRepository.findByDailyRateGreaterThanEqualAndEnabledTrue(minPrice).stream()
                 .map(listingMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -132,27 +122,25 @@ public class ListingService {
         if (city == null || city.trim().isEmpty()) {
             return getEnabledListings();
         }
-
-        List<Listing> listings = listingRepository.findByCityAndEnabledTrue(city.trim());
-        return listings.stream()
+        return listingRepository.findByCityAndEnabledTrue(city.trim()).stream()
                 .map(listingMapper::toDto)
                 .collect(Collectors.toList());
     }
+
     public List<ListingResponseDTO> searchByCity(String city) {
         if (city == null || city.trim().isEmpty()) {
             return getEnabledListings();
         }
-        List<Listing> listings = listingRepository.findByCityContainingIgnoreCase(city.trim());
-        return listings.stream()
+        return listingRepository.findByCityContainingIgnoreCase(city.trim()).stream()
                 .map(listingMapper::toDto)
                 .collect(Collectors.toList());
     }
+
     public List<ListingResponseDTO> filterByDistrict(String district) {
         if (district == null || district.trim().isEmpty()) {
             return getEnabledListings();
         }
-        List<Listing> listings = listingRepository.findByDistrictAndEnabledTrue(district.trim());
-        return listings.stream()
+        return listingRepository.findByDistrictAndEnabledTrue(district.trim()).stream()
                 .map(listingMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -162,24 +150,22 @@ public class ListingService {
             throw new IllegalArgumentException("Minimum price cannot be greater than maximum price");
         }
         String cityParam = (city != null && !city.trim().isEmpty()) ? city.trim() : null;
-        List<Listing> listings = listingRepository.filterByPriceAndCity(minPrice, maxPrice, cityParam);
-        return listings.stream()
+        return listingRepository.filterByPriceAndCity(minPrice, maxPrice, cityParam).stream()
                 .map(listingMapper::toDto)
                 .collect(Collectors.toList());
     }
+
     public List<ListingResponseDTO> filterAdvanced(Double minPrice, Double maxPrice, String city, String district) {
         if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
             throw new IllegalArgumentException("Minimum price cannot be greater than maximum price");
         }
         String cityParam = (city != null && !city.trim().isEmpty()) ? city.trim() : null;
         String districtParam = (district != null && !district.trim().isEmpty()) ? district.trim() : null;
-        List<Listing> listings = listingRepository.filterAdvanced(minPrice, maxPrice, cityParam, districtParam);
-        return listings.stream()
+        return listingRepository.filterAdvanced(minPrice, maxPrice, cityParam, districtParam).stream()
                 .map(listingMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    // Obter todas as cidades disponíveis (para dropdown no frontend)
     public List<String> getAllCities() {
         return listingRepository.findByEnabledTrue().stream()
                 .map(Listing::getCity)
@@ -189,7 +175,6 @@ public class ListingService {
                 .collect(Collectors.toList());
     }
 
-    // Obter todos os distritos disponíveis
     public List<String> getAllDistricts() {
         return listingRepository.findByEnabledTrue().stream()
                 .map(Listing::getDistrict)
