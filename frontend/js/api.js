@@ -15,7 +15,8 @@ const api = {
     }).then(r => { if (!r.ok) throw r; return r.json(); }),
 
     // Listings
-    getListings: () => fetch(`${API_BASE}/listings`).then(r => r.ok ? r.json() : []),
+    getListings: () => fetch(`${API_BASE}/listings/enabled`).then(r => r.ok ? r.json() : []),
+    searchListings: (q) => fetch(`${API_BASE}/listings/search?q=${encodeURIComponent(q || '')}`).then(r => r.ok ? r.json() : []),
     getMyListings: (ownerId) => fetch(`${API_BASE}/listings/owner/${ownerId}`).then(r => r.ok ? r.json() : []),
     createListing: (data) => fetch(`${API_BASE}/listings`, {
         method: 'POST',

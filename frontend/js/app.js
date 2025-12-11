@@ -152,9 +152,32 @@ async function loadListings() {
     try {
         allListings = await api.getListings();
         renderListings(allListings, 'listings-container', false);
+        setupSearch();
     } catch (e) {
         showToast('Failed to load listings', 'error');
     }
+}
+
+function setupSearch() {
+    const input = document.getElementById('search-input');
+    document.getElementById('search-btn').onclick = performSearch;
+    document.getElementById('clear-search-btn').onclick = clearSearch;
+    input.onkeypress = (e) => { if (e.key === 'Enter') performSearch(); };
+}
+
+async function performSearch() {
+    const q = document.getElementById('search-input').value.trim();
+    try {
+        const results = await api.searchListings(q);
+        renderListings(results, 'listings-container', false);
+    } catch (e) {
+        showToast('Search failed', 'error');
+    }
+}
+
+async function clearSearch() {
+    document.getElementById('search-input').value = '';
+    await loadListings();
 }
 
 async function loadMyListings() {

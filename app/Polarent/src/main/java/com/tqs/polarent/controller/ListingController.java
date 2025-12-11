@@ -1,13 +1,11 @@
 package com.tqs.polarent.controller;
+
 import com.tqs.polarent.dto.*;
 import com.tqs.polarent.services.ListingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.tqs.polarent.entity.Listing;
-import org.springframework.http.ResponseEntity;
-import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -34,8 +32,7 @@ public class ListingController {
     }
 
     @PostMapping
-    public ListingResponseDTO createListing(@RequestBody @Valid
-    ListingRequestDTO dto) {
+    public ListingResponseDTO createListing(@RequestBody @Valid ListingRequestDTO dto) {
         return listingService.createListing(dto);
     }
 
@@ -48,18 +45,16 @@ public class ListingController {
     public ResponseEntity<ListingResponseDTO> patchListing(@PathVariable Long id, @RequestBody ListingResponseDTO dto) {
         return ResponseEntity.ok(listingService.patchListing(id, dto));
     }
+
     @DeleteMapping("/{userId}/{listingId}")
-    public ResponseEntity<Void> deleteListing(
-            @PathVariable Long userId,
-            @PathVariable Long listingId) {
+    public ResponseEntity<Void> deleteListing(@PathVariable Long userId, @PathVariable Long listingId) {
         listingService.deleteListing(userId, listingId);
-        return ResponseEntity.noContent().build(); // 204 No Content
+        return ResponseEntity.noContent().build();
     }
+
     @GetMapping("/search")
     public ResponseEntity<List<ListingResponseDTO>> searchListings(
             @RequestParam(value = "q", required = false) String searchTerm) {
-
-        List<ListingResponseDTO> listings = listingService.searchListings(searchTerm);
-        return ResponseEntity.ok(listings);
+        return ResponseEntity.ok(listingService.searchListings(searchTerm));
     }
 }
