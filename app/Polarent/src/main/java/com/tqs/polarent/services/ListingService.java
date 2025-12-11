@@ -22,8 +22,22 @@ public class ListingService {
     private final UserRepository userRepository;
     private final ListingMapper listingMapper;
 
+    public List<ListingResponseDTO> getAllListings() {
+        return listingRepository.findAll()
+                .stream()
+                .map(listingMapper::toDto)
+                .toList();
+    }
+
     public List<ListingResponseDTO> getEnabledListings() {
         return listingRepository.findByEnabledTrue()
+                .stream()
+                .map(listingMapper::toDto)
+                .toList();
+    }
+
+    public List<ListingResponseDTO> getListingsByOwner(Long ownerId) {
+        return listingRepository.findByOwnerId(ownerId)
                 .stream()
                 .map(listingMapper::toDto)
                 .toList();

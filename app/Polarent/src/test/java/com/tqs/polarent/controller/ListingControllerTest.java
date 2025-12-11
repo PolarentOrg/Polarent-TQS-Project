@@ -4,23 +4,18 @@ import com.tqs.polarent.dto.ListingResponseDTO;
 import com.tqs.polarent.services.ListingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(ListingController.class)
 class ListingControllerTest {
 
     @Mock
@@ -68,12 +63,8 @@ class ListingControllerTest {
     void whenUpdateListing_thenReturn200() {
         when(listingService.updateListing(eq(1L), any(ListingResponseDTO.class))).thenReturn(responseDTO);
 
-        ResponseEntity<ListingResponseDTO> response = listingController.updateListing(1L, responseDTO);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getTitle()).isEqualTo("Test Listing");
-    }
+    @MockBean
+    private ListingService listingService;
 
     @Test
     void whenSearchListingsWithTerm_thenReturn200() {

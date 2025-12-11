@@ -24,7 +24,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
+        if (ex.getMessage() != null && ex.getMessage().contains("password")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
         return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalState(IllegalStateException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
