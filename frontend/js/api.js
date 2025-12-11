@@ -15,8 +15,16 @@ const api = {
     }).then(r => { if (!r.ok) throw r; return r.json(); }),
 
     // Listings
-    getListings: () => fetch(`${API_BASE}/listings`).then(r => r.ok ? r.json() : []),
+    getListings: () => fetch(`${API_BASE}/listings/enabled`).then(r => r.ok ? r.json() : []),
     getMyListings: (ownerId) => fetch(`${API_BASE}/listings/owner/${ownerId}`).then(r => r.ok ? r.json() : []),
+    
+    // Filters
+    filterAdvanced: (params) => {
+        const query = new URLSearchParams(Object.entries(params).filter(([_, v]) => v != null && v !== '')).toString();
+        return fetch(`${API_BASE}/listings/filter/advanced?${query}`).then(r => r.ok ? r.json() : []);
+    },
+    getCities: () => fetch(`${API_BASE}/listings/cities`).then(r => r.ok ? r.json() : []),
+    getDistricts: () => fetch(`${API_BASE}/listings/districts`).then(r => r.ok ? r.json() : []),
     createListing: (data) => fetch(`${API_BASE}/listings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

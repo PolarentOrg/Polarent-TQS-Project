@@ -38,6 +38,11 @@ public class Listing {
     @Column(nullable = false)
     private Boolean enabled;
 
+    @Column(name = "city")
+    private String city;
+    @Column(name = "district")
+    private String district;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
