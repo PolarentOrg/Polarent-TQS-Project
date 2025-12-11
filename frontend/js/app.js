@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Auth
 function setupAuth() {
-    // Tab switching
     document.querySelectorAll('.auth-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
@@ -27,37 +26,31 @@ function setupAuth() {
         });
     });
 
-    // Login
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
         try {
-            const user = await api.login(email, password);
+            const user = await api.login(document.getElementById('login-email').value, document.getElementById('login-password').value);
             loginSuccess(user);
         } catch (err) {
             showToast('Invalid email or password', 'error');
         }
     });
 
-    // Register
     document.getElementById('register-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const data = {
-            firstName: document.getElementById('register-firstname').value,
-            lastName: document.getElementById('register-lastname').value,
-            email: document.getElementById('register-email').value,
-            password: document.getElementById('register-password').value
-        };
         try {
-            const user = await api.register(data);
+            const user = await api.register({
+                firstName: document.getElementById('register-firstname').value,
+                lastName: document.getElementById('register-lastname').value,
+                email: document.getElementById('register-email').value,
+                password: document.getElementById('register-password').value
+            });
             loginSuccess(user);
         } catch (err) {
             showToast('Registration failed. Email may already exist.', 'error');
         }
     });
 
-    // Logout
     document.getElementById('logout-btn').addEventListener('click', logout);
 }
 
@@ -104,8 +97,7 @@ function setupNavigation() {
     document.querySelectorAll('#nav-links a').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            const page = e.target.dataset.page;
-            showPage(page);
+            showPage(e.target.dataset.page);
             document.querySelectorAll('#nav-links a').forEach(l => l.classList.remove('active'));
             e.target.classList.add('active');
         });
@@ -116,7 +108,6 @@ function setupNavigation() {
 function showPage(page) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(`${page}-page`).classList.add('active');
-    
     if (page === 'listings') loadListings();
     else if (page === 'my-listings') loadMyListings();
     else if (page === 'bookings') loadBookings();
@@ -152,17 +143,25 @@ async function loadListings() {
     try {
         allListings = await api.getListings();
         renderListings(allListings, 'listings-container', false);
-        setupSearch();
+        await loadFilterOptions();
+        setupSearchAndFilters();
     } catch (e) {
         showToast('Failed to load listings', 'error');
     }
 }
 
-function setupSearch() {
-    const input = document.getElementById('search-input');
+async function loadFilterOptions() {
+    const [cities, districts] = await Promise.all([api.getCities(), api.getDistricts()]);
+    document.getElementById('filter-city').innerHTML = '<option value="">All Cities</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+    document.getElementById('filter-district').innerHTML = '<option value="">All Districts</option>' + districts.map(d => `<option value="${d}">${d}</option>`).join('');
+}
+
+function setupSearchAndFilters() {
+    const searchInput = document.getElementById('search-input');
     document.getElementById('search-btn').onclick = performSearch;
-    document.getElementById('clear-search-btn').onclick = clearSearch;
-    input.onkeypress = (e) => { if (e.key === 'Enter') performSearch(); };
+    searchInput.onkeypress = (e) => { if (e.key === 'Enter') performSearch(); };
+    document.getElementById('filter-btn').onclick = applyFilters;
+    document.getElementById('clear-btn').onclick = clearAll;
 }
 
 async function performSearch() {
@@ -175,8 +174,27 @@ async function performSearch() {
     }
 }
 
-async function clearSearch() {
+async function applyFilters() {
+    const params = {
+        min: document.getElementById('filter-min').value || null,
+        max: document.getElementById('filter-max').value || null,
+        city: document.getElementById('filter-city').value || null,
+        district: document.getElementById('filter-district').value || null
+    };
+    try {
+        const filtered = await api.filterAdvanced(params);
+        renderListings(filtered, 'listings-container', false);
+    } catch (e) {
+        showToast('Filter failed', 'error');
+    }
+}
+
+async function clearAll() {
     document.getElementById('search-input').value = '';
+    document.getElementById('filter-min').value = '';
+    document.getElementById('filter-max').value = '';
+    document.getElementById('filter-city').value = '';
+    document.getElementById('filter-district').value = '';
     await loadListings();
 }
 
@@ -202,6 +220,7 @@ function renderListings(listings, containerId, isOwner) {
                 <span class="badge ${l.enabled ? 'badge-success' : 'badge-warning'}">${l.enabled ? 'Available' : 'Unavailable'}</span>
             </div>
             <p class="description">${escapeHtml(l.description || 'No description')}</p>
+            ${l.city || l.district ? `<p class="location">📍 ${escapeHtml([l.city, l.district].filter(Boolean).join(', '))}</p>` : ''}
             <div class="card-footer">
                 <span class="price">€${l.dailyRate.toFixed(2)}/day</span>
                 ${isOwner ? `
@@ -219,21 +238,12 @@ function showCreateListingModal() {
     openModal(`
         <h3>Create New Listing</h3>
         <form id="create-listing-form">
-            <div class="form-group">
-                <label>Title</label>
-                <input type="text" name="title" required>
-            </div>
-            <div class="form-group">
-                <label>Description</label>
-                <textarea name="description" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Daily Rate (€)</label>
-                <input type="number" name="dailyRate" step="0.01" min="0.01" required>
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" name="enabled" checked> Available for rent</label>
-            </div>
+            <div class="form-group"><label>Title</label><input type="text" name="title" required></div>
+            <div class="form-group"><label>Description</label><textarea name="description" rows="3"></textarea></div>
+            <div class="form-group"><label>Daily Rate (€)</label><input type="number" name="dailyRate" step="0.01" min="0.01" required></div>
+            <div class="form-group"><label>City</label><input type="text" name="city"></div>
+            <div class="form-group"><label>District</label><input type="text" name="district"></div>
+            <div class="form-group"><label><input type="checkbox" name="enabled" checked> Available for rent</label></div>
             <button type="submit" class="btn btn-primary">Create</button>
         </form>
     `);
@@ -243,15 +253,16 @@ function showCreateListingModal() {
 async function createListing(e) {
     e.preventDefault();
     const form = e.target;
-    const data = {
-        ownerId: currentUser.userId,
-        title: form.title.value,
-        description: form.description.value,
-        dailyRate: parseFloat(form.dailyRate.value),
-        enabled: form.enabled.checked
-    };
     try {
-        await api.createListing(data);
+        await api.createListing({
+            ownerId: currentUser.userId,
+            title: form.title.value,
+            description: form.description.value,
+            dailyRate: parseFloat(form.dailyRate.value),
+            city: form.city.value || null,
+            district: form.district.value || null,
+            enabled: form.enabled.checked
+        });
         showToast('Listing created!');
         closeModal();
         loadMyListings();
@@ -278,26 +289,16 @@ function showRentModal(listingId) {
         <p class="price">€${listing.dailyRate.toFixed(2)}/day</p>
         <form id="rent-form">
             <input type="hidden" name="listingId" value="${listingId}">
-            <div class="form-group">
-                <label>Start Day (day of year)</label>
-                <input type="number" name="initialDate" min="1" max="365" required>
-            </div>
-            <div class="form-group">
-                <label>Duration (days)</label>
-                <input type="number" name="duration" min="1" required>
-            </div>
-            <div class="form-group">
-                <label>Note (optional)</label>
-                <textarea name="note" rows="2"></textarea>
-            </div>
+            <div class="form-group"><label>Start Day (day of year)</label><input type="number" name="initialDate" min="1" max="365" required></div>
+            <div class="form-group"><label>Duration (days)</label><input type="number" name="duration" min="1" required></div>
+            <div class="form-group"><label>Note (optional)</label><textarea name="note" rows="2"></textarea></div>
             <p class="total">Total: €<span id="rent-total">0.00</span></p>
             <button type="submit" class="btn btn-primary">Submit Request</button>
         </form>
     `);
     const form = document.getElementById('rent-form');
     form.duration.addEventListener('input', () => {
-        const days = parseInt(form.duration.value) || 0;
-        document.getElementById('rent-total').textContent = (days * listing.dailyRate).toFixed(2);
+        document.getElementById('rent-total').textContent = ((parseInt(form.duration.value) || 0) * listing.dailyRate).toFixed(2);
     });
     form.addEventListener('submit', (e) => submitRentRequest(e, listing));
 }
@@ -305,15 +306,14 @@ function showRentModal(listingId) {
 async function submitRentRequest(e, listing) {
     e.preventDefault();
     const form = e.target;
-    const data = {
-        listingId: listing.id,
-        requesterId: currentUser.userId,
-        initialDate: parseInt(form.initialDate.value),
-        duration: parseInt(form.duration.value),
-        note: form.note.value || null
-    };
     try {
-        await api.createRequest(data);
+        await api.createRequest({
+            listingId: listing.id,
+            requesterId: currentUser.userId,
+            initialDate: parseInt(form.initialDate.value),
+            duration: parseInt(form.duration.value),
+            note: form.note.value || null
+        });
         showToast('Request submitted!');
         closeModal();
     } catch (err) {
@@ -325,25 +325,15 @@ async function showEditListingModal(listingId) {
     const listings = await api.getMyListings(currentUser.userId);
     const listing = listings.find(l => l.id === listingId);
     if (!listing) return;
-    
     openModal(`
         <h3>Edit Listing</h3>
         <form id="edit-listing-form">
-            <div class="form-group">
-                <label>Title</label>
-                <input type="text" name="title" value="${escapeHtml(listing.title)}" required>
-            </div>
-            <div class="form-group">
-                <label>Description</label>
-                <textarea name="description" rows="3">${escapeHtml(listing.description || '')}</textarea>
-            </div>
-            <div class="form-group">
-                <label>Daily Rate (€)</label>
-                <input type="number" name="dailyRate" step="0.01" min="0.01" value="${listing.dailyRate}" required>
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" name="enabled" ${listing.enabled ? 'checked' : ''}> Available for rent</label>
-            </div>
+            <div class="form-group"><label>Title</label><input type="text" name="title" value="${escapeHtml(listing.title)}" required></div>
+            <div class="form-group"><label>Description</label><textarea name="description" rows="3">${escapeHtml(listing.description || '')}</textarea></div>
+            <div class="form-group"><label>Daily Rate (€)</label><input type="number" name="dailyRate" step="0.01" min="0.01" value="${listing.dailyRate}" required></div>
+            <div class="form-group"><label>City</label><input type="text" name="city" value="${escapeHtml(listing.city || '')}"></div>
+            <div class="form-group"><label>District</label><input type="text" name="district" value="${escapeHtml(listing.district || '')}"></div>
+            <div class="form-group"><label><input type="checkbox" name="enabled" ${listing.enabled ? 'checked' : ''}> Available for rent</label></div>
             <button type="submit" class="btn btn-primary">Save</button>
         </form>
     `);
@@ -353,16 +343,17 @@ async function showEditListingModal(listingId) {
 async function updateListing(e, listingId) {
     e.preventDefault();
     const form = e.target;
-    const data = {
-        id: listingId,
-        ownerId: currentUser.userId,
-        title: form.title.value,
-        description: form.description.value,
-        dailyRate: parseFloat(form.dailyRate.value),
-        enabled: form.enabled.checked
-    };
     try {
-        await api.updateListing(listingId, data);
+        await api.updateListing(listingId, {
+            id: listingId,
+            ownerId: currentUser.userId,
+            title: form.title.value,
+            description: form.description.value,
+            dailyRate: parseFloat(form.dailyRate.value),
+            city: form.city.value || null,
+            district: form.district.value || null,
+            enabled: form.enabled.checked
+        });
         showToast('Listing updated!');
         closeModal();
         loadMyListings();
@@ -398,13 +389,8 @@ function renderBookings(bookings) {
                 <span class="price">€${b.price.toFixed(2)}</span>
             </div>
             <div class="list-item-actions">
-                ${b.status === 'PENDING' ? `
-                    <button class="btn btn-success btn-sm" onclick="updateBookingStatus(${b.id}, 'PAID')">Pay</button>
-                    <button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>
-                ` : ''}
-                ${b.status === 'PAID' ? `
-                    <button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>
-                ` : ''}
+                ${b.status === 'PENDING' ? `<button class="btn btn-success btn-sm" onclick="updateBookingStatus(${b.id}, 'PAID')">Pay</button><button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
+                ${b.status === 'PAID' ? `<button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
             </div>
         </div>
     `).join('');
@@ -431,15 +417,13 @@ async function cancelBooking(id) {
     }
 }
 
-// Requests (for listing owners)
+// Requests
 async function loadRequestsPage() {
     try {
         const listings = await api.getListings();
         const myListings = listings.filter(l => l.ownerId === currentUser.userId);
         const select = document.getElementById('listing-select');
-        select.innerHTML = myListings.length 
-            ? myListings.map(l => `<option value="${l.id}">${escapeHtml(l.title)}</option>`).join('')
-            : '<option value="">No listings</option>';
+        select.innerHTML = myListings.length ? myListings.map(l => `<option value="${l.id}">${escapeHtml(l.title)}</option>`).join('') : '<option value="">No listings</option>';
         select.onchange = () => loadRequests(select.value);
         if (myListings.length) loadRequests(myListings[0].id);
         else document.getElementById('requests-container').innerHTML = '<p class="empty">Create a listing first</p>';

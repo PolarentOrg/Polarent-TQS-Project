@@ -56,7 +56,14 @@
             <div class="search-bar">
                 <input type="text" id="search-input" placeholder="Search equipment...">
                 <button id="search-btn" class="btn btn-primary">Search</button>
-                <button id="clear-search-btn" class="btn btn-secondary">Clear</button>
+            </div>
+            <div class="filters">
+                <input type="number" id="filter-min" placeholder="Min €" step="0.01" min="0">
+                <input type="number" id="filter-max" placeholder="Max €" step="0.01" min="0">
+                <select id="filter-city"><option value="">All Cities</option></select>
+                <select id="filter-district"><option value="">All Districts</option></select>
+                <button id="filter-btn" class="btn btn-primary">Filter</button>
+                <button id="clear-btn" class="btn btn-secondary">Clear</button>
             </div>
             <div id="listings-container" class="grid"></div>
         </section>

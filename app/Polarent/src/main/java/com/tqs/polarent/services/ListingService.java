@@ -22,22 +22,19 @@ public class ListingService {
     private final ListingMapper listingMapper;
 
     public List<ListingResponseDTO> getAllListings() {
-        return listingRepository.findAll()
-                .stream()
+        return listingRepository.findAll().stream()
                 .map(listingMapper::toDto)
                 .toList();
     }
 
     public List<ListingResponseDTO> getEnabledListings() {
-        return listingRepository.findByEnabledTrue()
-                .stream()
+        return listingRepository.findByEnabledTrue().stream()
                 .map(listingMapper::toDto)
                 .toList();
     }
 
     public List<ListingResponseDTO> getListingsByOwner(Long ownerId) {
-        return listingRepository.findByOwnerId(ownerId)
-                .stream()
+        return listingRepository.findByOwnerId(ownerId).stream()
                 .map(listingMapper::toDto)
                 .toList();
     }
@@ -83,13 +80,107 @@ public class ListingService {
         listingRepository.delete(listing);
     }
 
+    // Search
     public List<ListingResponseDTO> searchListings(String searchTerm) {
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
             return getEnabledListings();
         }
-        return listingRepository.searchByTerm(searchTerm.trim())
-                .stream()
+        return listingRepository.searchByTerm(searchTerm.trim()).stream()
                 .map(listingMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    // Filters
+    public List<ListingResponseDTO> filterByPriceRange(Double minPrice, Double maxPrice) {
+        if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
+            throw new IllegalArgumentException("Minimum price cannot be greater than maximum price");
+        }
+        return listingRepository.filterByPriceRange(minPrice, maxPrice).stream()
+                .map(listingMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<ListingResponseDTO> filterByMaxPrice(Double maxPrice) {
+        if (maxPrice == null || maxPrice <= 0) {
+            return getEnabledListings();
+        }
+        return listingRepository.findByDailyRateLessThanEqualAndEnabledTrue(maxPrice).stream()
+                .map(listingMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<ListingResponseDTO> filterByMinPrice(Double minPrice) {
+        if (minPrice == null || minPrice < 0) {
+            return getEnabledListings();
+        }
+        return listingRepository.findByDailyRateGreaterThanEqualAndEnabledTrue(minPrice).stream()
+                .map(listingMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<ListingResponseDTO> filterByCity(String city) {
+        if (city == null || city.trim().isEmpty()) {
+            return getEnabledListings();
+        }
+        return listingRepository.findByCityAndEnabledTrue(city.trim()).stream()
+                .map(listingMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<ListingResponseDTO> searchByCity(String city) {
+        if (city == null || city.trim().isEmpty()) {
+            return getEnabledListings();
+        }
+        return listingRepository.findByCityContainingIgnoreCase(city.trim()).stream()
+                .map(listingMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<ListingResponseDTO> filterByDistrict(String district) {
+        if (district == null || district.trim().isEmpty()) {
+            return getEnabledListings();
+        }
+        return listingRepository.findByDistrictAndEnabledTrue(district.trim()).stream()
+                .map(listingMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<ListingResponseDTO> filterByPriceAndCity(Double minPrice, Double maxPrice, String city) {
+        if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
+            throw new IllegalArgumentException("Minimum price cannot be greater than maximum price");
+        }
+        String cityParam = (city != null && !city.trim().isEmpty()) ? city.trim() : null;
+        return listingRepository.filterByPriceAndCity(minPrice, maxPrice, cityParam).stream()
+                .map(listingMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<ListingResponseDTO> filterAdvanced(Double minPrice, Double maxPrice, String city, String district) {
+        if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
+            throw new IllegalArgumentException("Minimum price cannot be greater than maximum price");
+        }
+        String cityParam = (city != null && !city.trim().isEmpty()) ? city.trim() : null;
+        String districtParam = (district != null && !district.trim().isEmpty()) ? district.trim() : null;
+        return listingRepository.filterAdvanced(minPrice, maxPrice, cityParam, districtParam).stream()
+                .map(listingMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getAllCities() {
+        return listingRepository.findByEnabledTrue().stream()
+                .map(Listing::getCity)
+                .filter(city -> city != null && !city.trim().isEmpty())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getAllDistricts() {
+        return listingRepository.findByEnabledTrue().stream()
+                .map(Listing::getDistrict)
+                .filter(district -> district != null && !district.trim().isEmpty())
+                .distinct()
+                .sorted()
                 .collect(Collectors.toList());
     }
 }
