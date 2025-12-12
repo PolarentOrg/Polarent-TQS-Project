@@ -109,6 +109,7 @@ function showPage(page) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(`${page}-page`).classList.add('active');
     if (page === 'listings') loadListings();
+    else if (page === 'dashboard') loadDashboard();
     else if (page === 'my-listings') loadMyListings();
     else if (page === 'my-requests') loadMyRequests();
     else if (page === 'bookings') loadBookings();
@@ -197,6 +198,50 @@ async function clearAll() {
     document.getElementById('filter-city').value = '';
     document.getElementById('filter-district').value = '';
     await loadListings();
+}
+
+async function loadDashboard() {
+    try {
+        const [listings, bookings, requests] = await Promise.all([
+            api.getMyListings(currentUser.userId),
+            api.getBookingsByOwner(currentUser.userId),
+            api.getRequestsByListing() // We'll need to aggregate this
+        ]);
+
+        // Update stats
+        document.getElementById('total-listings').textContent = listings.length;
+        document.getElementById('active-bookings').textContent = bookings.filter(b => b.status === 'PAID' || b.status === 'ACCEPTED').length;
+        
+        const totalRevenue = bookings.filter(b => b.status === 'PAID' || b.status === 'COMPLETED').reduce((sum, b) => sum + b.price, 0);
+        document.getElementById('total-revenue').textContent = `€${totalRevenue.toFixed(2)}`;
+
+        // Recent bookings
+        const recentBookings = bookings.slice(0, 5);
+        renderDashboardBookings(recentBookings);
+
+    } catch (e) {
+        showToast('Failed to load dashboard', 'error');
+    }
+}
+
+function renderDashboardBookings(bookings) {
+    const container = document.getElementById('recent-bookings');
+    if (!bookings.length) {
+        container.innerHTML = '<p class="empty">No recent bookings</p>';
+        return;
+    }
+    container.innerHTML = bookings.map(b => `
+        <div class="list-item">
+            <div class="list-item-info">
+                <strong>Booking #${b.id}</strong>
+                <span class="badge badge-${getStatusClass(b.status)}">${b.status}</span>
+            </div>
+            <div class="list-item-details">
+                <span>€${b.price.toFixed(2)}</span>
+                <span>${new Date(b.createdAt).toLocaleDateString()}</span>
+            </div>
+        </div>
+    `).join('');
 }
 
 async function loadMyListings() {

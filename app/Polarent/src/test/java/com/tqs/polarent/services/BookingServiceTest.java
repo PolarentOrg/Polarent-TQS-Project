@@ -199,4 +199,15 @@ class BookingServiceTest {
 
         assertThat(result).hasSize(1);
     }
+
+    @Test
+    void whenGetBookingsByOwnerId_thenReturnBookings() {
+        when(bookingRepository.findByOwnerId(1L)).thenReturn(List.of(booking));
+        when(bookingMapper.toDto(booking)).thenReturn(bookingResponseDTO);
+
+        List<BookingResponseDTO> result = bookingService.getBookingsByOwnerId(1L);
+
+        assertThat(result).hasSize(1);
+        verify(bookingRepository).findByOwnerId(1L);
+    }
 }
