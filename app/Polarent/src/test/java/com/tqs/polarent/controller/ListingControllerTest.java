@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -51,6 +52,26 @@ class ListingControllerTest {
         camera2Dto.setId(2L);
         camera2Dto.setTitle("Sony A7IV");
         camera2Dto.setDailyRate(79.99);
+    }
+
+    @Test
+    void whenGetListingById_thenReturn200() {
+        when(listingService.getListingById(1L)).thenReturn(responseDTO);
+
+        ResponseEntity<ListingResponseDTO> response = listingController.getListingById(1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getTitle()).isEqualTo("Test Listing");
+    }
+
+    @Test
+    void whenGetListingByIdNotFound_thenThrowException() {
+        when(listingService.getListingById(999L)).thenThrow(new IllegalArgumentException("Listing not found"));
+
+        assertThatThrownBy(() -> listingController.getListingById(999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Listing not found");
     }
 
     @Test

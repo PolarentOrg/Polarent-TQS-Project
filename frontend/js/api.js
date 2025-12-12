@@ -16,6 +16,7 @@ const api = {
 
     // Listings
     getListings: () => fetch(`${API_BASE}/listings/enabled`).then(r => r.ok ? r.json() : []),
+    getListingById: (id) => fetch(`${API_BASE}/listings/${id}`).then(r => r.ok ? r.json() : null),
     searchListings: (q) => fetch(`${API_BASE}/listings/search?q=${encodeURIComponent(q || '')}`).then(r => r.ok ? r.json() : []),
     getMyListings: (ownerId) => fetch(`${API_BASE}/listings/owner/${ownerId}`).then(r => r.ok ? r.json() : []),
     
