@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -69,6 +70,26 @@ class RequestServiceTest {
         List<RequestResponseDTO> result = requestService.getRequestsByListing(99L);
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void whenGetRequestById_withValidId_thenReturnRequest() {
+        when(requestRepository.findById(1L)).thenReturn(Optional.of(request));
+        when(requestMapper.toDto(request)).thenReturn(requestResponseDTO);
+
+        RequestResponseDTO result = requestService.getRequestById(1L);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+    }
+
+    @Test
+    void whenGetRequestById_withInvalidId_thenThrowException() {
+        when(requestRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> requestService.getRequestById(99L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Request not found");
     }
 
     @Test

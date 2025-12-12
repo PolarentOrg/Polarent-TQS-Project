@@ -13,8 +13,9 @@
             <ul class="nav-links" id="nav-links" style="display: none;">
                 <li><a href="#" data-page="listings" class="active">Listings</a></li>
                 <li><a href="#" data-page="my-listings">My Listings</a></li>
+                <li><a href="#" data-page="my-requests">My Requests</a></li>
                 <li><a href="#" data-page="bookings">My Bookings</a></li>
-                <li><a href="#" data-page="requests">Requests</a></li>
+                <li><a href="#" data-page="requests">Incoming Requests</a></li>
             </ul>
             <div class="user-info" id="user-info" style="display: none;">
                 <span id="user-display"></span>
@@ -83,6 +84,15 @@
                 <h2>My Bookings</h2>
             </div>
             <div id="bookings-container" class="list"></div>
+        </section>
+
+        <!-- My Requests Page (for renters to see/cancel their requests) -->
+        <section id="my-requests-page" class="page">
+            <div class="page-header">
+                <h2>My Requests</h2>
+                <p class="subtitle">View and cancel your rental requests</p>
+            </div>
+            <div id="my-requests-container" class="list"></div>
         </section>
 
         <!-- Requests Page (for listing owners) -->

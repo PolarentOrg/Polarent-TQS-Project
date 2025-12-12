@@ -46,6 +46,8 @@ const api = {
         body: JSON.stringify(data)
     }).then(r => { if (!r.ok) throw r; return r.json(); }),
     getRequestsByListing: (listingId) => fetch(`${API_BASE}/requests/listing/${listingId}`).then(r => r.ok ? r.json() : []),
+    getMyRequests: (requesterId) => fetch(`${API_BASE}/requests/requester/${requesterId}`).then(r => r.ok ? r.json() : []),
+    cancelRequest: (requestId) => fetch(`${API_BASE}/requests/${requestId}`, { method: 'DELETE' }),
     acceptRequest: (requestData) => fetch(`${API_BASE}/requests/accept`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

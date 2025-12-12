@@ -27,6 +27,18 @@ public class RequestService {
                 .collect(Collectors.toList());
     }
 
+    public List<RequestResponseDTO> getRequestsByRequester(Long requesterId) {
+        return requestRepository.findByRequesterId(requesterId).stream()
+                .map(requestMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public RequestResponseDTO getRequestById(Long id) {
+        Request request = requestRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Request not found"));
+        return requestMapper.toDto(request);
+    } // <--- Add this line
+
     @Transactional
     public RequestResponseDTO createRequest(RequestRequestDTO dto) {
         Request request = requestMapper.toEntity(dto);
