@@ -88,6 +88,16 @@ class BookingControllerTest {
     }
 
     @Test
+    void whenGetBookingsByOwnerId_thenReturn200() {
+        when(bookingService.getBookingsByOwnerId(1L)).thenReturn(List.of(responseDTO));
+
+        ResponseEntity<List<BookingResponseDTO>> response = bookingController.getBookingsByOwnerId(1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(1);
+    }
+
+    @Test
     void whenUpdateBookingStatus_thenReturn200() {
         responseDTO.setStatus(Status.PAID);
         when(bookingService.updateBookingStatus(eq(1L), eq(Status.PAID))).thenReturn(responseDTO);

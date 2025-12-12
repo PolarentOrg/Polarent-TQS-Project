@@ -40,6 +40,12 @@ const api = {
     }).then(r => r.json()),
     deleteListing: (userId, listingId) => fetch(`${API_BASE}/listings/${userId}/${listingId}`, { method: 'DELETE' }),
 
+    // Bookings
+    getBookingsByRenter: (renterId) => fetch(`${API_BASE}/bookings/renter/${renterId}`).then(r => r.ok ? r.json() : []),
+    getBookingsByOwner: (ownerId) => fetch(`${API_BASE}/bookings/owner/${ownerId}`).then(r => r.ok ? r.json() : []),
+    updateBookingStatus: (id, status) => fetch(`${API_BASE}/bookings/${id}/status?status=${status}`, { method: 'PATCH' }).then(r => r.json()),
+    cancelBooking: (id) => fetch(`${API_BASE}/bookings/${id}/cancel`, { method: 'PATCH' }).then(r => r.json()),
+
     // Requests
     createRequest: (data) => fetch(`${API_BASE}/requests`, {
         method: 'POST',
