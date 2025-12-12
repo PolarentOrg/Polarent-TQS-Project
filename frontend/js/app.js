@@ -220,7 +220,6 @@ function renderListings(listings, containerId, isOwner) {
                 <h3>${escapeHtml(l.title)}</h3>
                 <span class="badge ${l.enabled ? 'badge-success' : 'badge-warning'}">${l.enabled ? 'Available' : 'Unavailable'}</span>
             </div>
-            <p class="description">${escapeHtml(l.description || 'No description')}</p>
             ${l.city || l.district ? `<p class="location">📍 ${escapeHtml([l.city, l.district].filter(Boolean).join(', '))}</p>` : ''}
             <div class="card-footer">
                 <span class="price">€${l.dailyRate.toFixed(2)}/day</span>

@@ -65,6 +65,15 @@ class ListingControllerTest {
     }
 
     @Test
+    void whenGetListingByIdNotFound_thenThrowException() {
+        when(listingService.getListingById(999L)).thenThrow(new IllegalArgumentException("Listing not found"));
+
+        assertThatThrownBy(() -> listingController.getListingById(999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Listing not found");
+    }
+
+    @Test
     void whenGetEnabledListings_thenReturn200() {
         when(listingService.getEnabledListings()).thenReturn(List.of(responseDTO));
 
