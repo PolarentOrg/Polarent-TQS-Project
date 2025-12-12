@@ -110,6 +110,7 @@ function showPage(page) {
     document.getElementById(`${page}-page`).classList.add('active');
     if (page === 'listings') loadListings();
     else if (page === 'my-listings') loadMyListings();
+    else if (page === 'my-requests') loadMyRequests();
     else if (page === 'bookings') loadBookings();
     else if (page === 'requests') loadRequestsPage();
 }
@@ -473,6 +474,51 @@ async function acceptRequest(request) {
         loadRequests(request.listingId);
     } catch (e) {
         showToast('Failed to accept request', 'error');
+    }
+}
+
+// My Requests (for renters)
+async function loadMyRequests() {
+    try {
+        const requests = await api.getMyRequests(currentUser.userId);
+        renderMyRequests(requests);
+    } catch (e) {
+        showToast('Failed to load requests', 'error');
+    }
+}
+
+function renderMyRequests(requests) {
+    const container = document.getElementById('my-requests-container');
+    if (!requests.length) {
+        container.innerHTML = '<p class="empty">No pending requests</p>';
+        return;
+    }
+    container.innerHTML = requests.map(r => `
+        <div class="list-item">
+            <div class="list-item-info">
+                <strong>Request #${r.id}</strong>
+                <span>Listing #${r.listingId}</span>
+            </div>
+            <div class="list-item-details">
+                <span>Start: Day ${r.initialDate}</span>
+                <span>Duration: ${r.duration} days</span>
+                ${r.note ? `<span class="note">"${escapeHtml(r.note)}"</span>` : ''}
+            </div>
+            <div class="list-item-actions">
+                <button class="btn btn-danger btn-sm" onclick="cancelRequest(${r.id})">Cancel</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function cancelRequest(requestId) {
+    if (!confirm('Cancel this request?')) return;
+    try {
+        await api.cancelRequest(requestId);
+        showToast('Request cancelled');
+        loadMyRequests();
+    } catch (e) {
+        showToast('Failed to cancel request', 'error');
     }
 }
 
