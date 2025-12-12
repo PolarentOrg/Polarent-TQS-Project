@@ -54,6 +54,17 @@ class ListingControllerTest {
     }
 
     @Test
+    void whenGetListingById_thenReturn200() {
+        when(listingService.getListingById(1L)).thenReturn(responseDTO);
+
+        ResponseEntity<ListingResponseDTO> response = listingController.getListingById(1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getTitle()).isEqualTo("Test Listing");
+    }
+
+    @Test
     void whenGetEnabledListings_thenReturn200() {
         when(listingService.getEnabledListings()).thenReturn(List.of(responseDTO));
 

@@ -21,6 +21,12 @@ public class ListingService {
     private final UserRepository userRepository;
     private final ListingMapper listingMapper;
 
+    public ListingResponseDTO getListingById(Long id) {
+        Listing listing = listingRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Listing not found"));
+        return listingMapper.toDto(listing);
+    }
+
     public List<ListingResponseDTO> getAllListings() {
         return listingRepository.findAll().stream()
                 .map(listingMapper::toDto)
