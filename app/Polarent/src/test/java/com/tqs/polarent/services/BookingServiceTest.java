@@ -172,6 +172,20 @@ class BookingServiceTest {
     }
 
     @Test
+    void whenDeclineBooking_withValidId_thenReturnDeclinedBooking() {
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+        booking.setStatus(Status.DECLINED);
+        when(bookingRepository.save(booking)).thenReturn(booking);
+        bookingResponseDTO.setStatus(Status.DECLINED);
+        when(bookingMapper.toDto(booking)).thenReturn(bookingResponseDTO);
+
+        BookingResponseDTO result = bookingService.declineBooking(1L);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getStatus()).isEqualTo(Status.DECLINED);
+    }
+
+    @Test
     void whenDeleteBooking_withValidId_thenDeleteSuccessfully() {
         when(bookingRepository.existsById(1L)).thenReturn(true);
         doNothing().when(bookingRepository).deleteById(1L);

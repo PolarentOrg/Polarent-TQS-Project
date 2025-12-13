@@ -53,6 +53,11 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.cancelBooking(id));
     }
 
+    @PatchMapping("/{id}/decline")
+    public ResponseEntity<BookingResponseDTO> declineBooking(@PathVariable Long id) {
+        return ResponseEntity.ok(bookingService.declineBooking(id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
         bookingService.deleteBooking(id);

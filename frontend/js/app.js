@@ -455,35 +455,65 @@ async function updateListing(e, listingId) {
 // Bookings
 async function loadBookings() {
     try {
-        const bookings = await api.getBookingsByRenter(currentUser.userId);
-        renderBookings(bookings);
+        const [renterBookings, ownerBookings] = await Promise.all([
+            api.getBookingsByRenter(currentUser.userId),
+            api.getBookingsByOwner(currentUser.userId)
+        ]);
+        renderBookings(renterBookings, ownerBookings);
     } catch (e) {
         showToast('Failed to load bookings', 'error');
     }
 }
 
-function renderBookings(bookings) {
+function renderBookings(renterBookings, ownerBookings) {
     const container = document.getElementById('bookings-container');
-    if (!bookings.length) {
-        container.innerHTML = '<p class="empty">No bookings found</p>';
-        return;
+    
+    let html = '';
+    
+    if (renterBookings.length > 0) {
+        html += '<h3>My Rental Bookings</h3>';
+        html += renterBookings.map(b => `
+            <div class="list-item">
+                <div class="list-item-info">
+                    <strong>Booking #${b.id}</strong>
+                    <span class="badge badge-${getStatusClass(b.status)}">${b.status}</span>
+                </div>
+                <div class="list-item-details">
+                    <span>Request ID: ${b.requestId}</span>
+                    <span class="price">€${b.price.toFixed(2)}</span>
+                </div>
+                <div class="list-item-actions">
+                    ${b.status === 'PENDING' ? `<button class="btn btn-success btn-sm" onclick="updateBookingStatus(${b.id}, 'PAID')">Pay</button><button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
+                    ${b.status === 'PAID' ? `<button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
+                </div>
+            </div>
+        `).join('');
     }
-    container.innerHTML = bookings.map(b => `
-        <div class="list-item">
-            <div class="list-item-info">
-                <strong>Booking #${b.id}</strong>
-                <span class="badge badge-${getStatusClass(b.status)}">${b.status}</span>
+    
+    if (ownerBookings.length > 0) {
+        html += '<h3>Bookings for My Listings</h3>';
+        html += ownerBookings.map(b => `
+            <div class="list-item">
+                <div class="list-item-info">
+                    <strong>Booking #${b.id}</strong>
+                    <span class="badge badge-${getStatusClass(b.status)}">${b.status}</span>
+                </div>
+                <div class="list-item-details">
+                    <span>Request ID: ${b.requestId}</span>
+                    <span class="price">€${b.price.toFixed(2)}</span>
+                </div>
+                <div class="list-item-actions">
+                    ${b.status === 'PENDING' ? `<button class="btn btn-success btn-sm" onclick="updateBookingStatus(${b.id}, 'ACCEPTED')">Accept</button><button class="btn btn-danger btn-sm" onclick="declineBooking(${b.id})">Decline</button>` : ''}
+                </div>
             </div>
-            <div class="list-item-details">
-                <span>Request ID: ${b.requestId}</span>
-                <span class="price">€${b.price.toFixed(2)}</span>
-            </div>
-            <div class="list-item-actions">
-                ${b.status === 'PENDING' ? `<button class="btn btn-success btn-sm" onclick="updateBookingStatus(${b.id}, 'PAID')">Pay</button><button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
-                ${b.status === 'PAID' ? `<button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
-            </div>
-        </div>
-    `).join('');
+        `).join('');
+    }
+    
+    if (!renterBookings.length && !ownerBookings.length) {
+        html = '<p class="empty">No bookings found</p>';
+    }
+    
+    container.innerHTML = html;
 }
 
 async function updateBookingStatus(id, status) {
@@ -504,6 +534,17 @@ async function cancelBooking(id) {
         loadBookings();
     } catch (e) {
         showToast('Failed to cancel booking', 'error');
+    }
+}
+
+async function declineBooking(id) {
+    if (!confirm('Decline this booking?')) return;
+    try {
+        await api.declineBooking(id);
+        showToast('Booking declined');
+        loadBookings();
+    } catch (e) {
+        showToast('Failed to decline booking', 'error');
     }
 }
 
