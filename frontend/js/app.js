@@ -110,6 +110,7 @@ function showPage(page) {
     document.getElementById(`${page}-page`).classList.add('active');
     if (page === 'listings') loadListings();
     else if (page === 'dashboard') loadDashboard();
+    else if (page === 'renter-dashboard') loadRenterDashboard();
     else if (page === 'my-listings') loadMyListings();
     else if (page === 'my-requests') loadMyRequests();
     else if (page === 'bookings') loadBookings();
@@ -592,6 +593,107 @@ async function cancelRequest(requestId) {
         showToast('Failed to cancel request', 'error');
     }
 }
+
+async function loadRenterDashboard() {
+    if (!currentUser) return;
+
+    try {
+        document.getElementById('renter-dashboard-page').classList.add('loading');
+        const dashboard = await api.getRenterDashboard(currentUser.userId);
+        updateRenterStats(dashboard);
+        renderRentalLists(dashboard);
+        await loadAllRentals();
+
+    } catch (error) {
+        console.error('Error loading renter dashboard:', error);
+        showToast('Failed to load dashboard', 'error');
+    } finally {
+        document.getElementById('renter-dashboard-page').classList.remove('loading');
+    }
+}
+function updateRenterStats(dashboard) {
+    document.getElementById('total-rentals').textContent = dashboard.totalRentals || 0;
+    document.getElementById('active-rentals').textContent = dashboard.activeRentalsCount || 0;
+    document.getElementById('pending-rentals').textContent = dashboard.pendingRentalsCount || 0;
+    document.getElementById('total-spent').textContent = `€${(dashboard.totalSpent || 0).toFixed(2)}`;
+    document.getElementById('monthly-spent').textContent = `€${(dashboard.monthlySpent || 0).toFixed(2)}`;
+}
+
+function renderRentalLists(dashboard) {
+    const activeList = document.getElementById('active-rentals-list');
+    if (dashboard.activeRentals && dashboard.activeRentals.length > 0) {
+        activeList.innerHTML = dashboard.activeRentals.map(rental => renderRentalItem(rental)).join('');
+    } else {
+        activeList.innerHTML = '<div class="empty">No active rentals</div>';
+    }
+    const pendingList = document.getElementById('pending-rentals-list');
+    if (dashboard.pendingRentals && dashboard.pendingRentals.length > 0) {
+        pendingList.innerHTML = dashboard.pendingRentals.map(rental => renderRentalItem(rental)).join('');
+    } else {
+        pendingList.innerHTML = '<div class="empty">No pending rentals</div>';
+    }
+}
+function renderRentalItem(rental) {
+    return `
+        <div class="list-item">
+            <div class="list-item-info">
+                <strong>${escapeHtml(rental.listingTitle)}</strong>
+                <span class="badge badge-${getStatusClass(rental.status)}">${rental.status}</span>
+            </div>
+            <div class="list-item-details">
+                <span>€${rental.price.toFixed(2)}</span>
+                <span>${formatDate(rental.startDate)} - ${formatDate(rental.endDate)}</span>
+                <span>Owner: ${escapeHtml(rental.ownerName)}</span>
+            </div>
+            <div class="list-item-actions">
+                ${rental.status === 'PENDING' ?
+                    `<button class="btn btn-success btn-sm" onclick="payBooking(${rental.bookingId})">Pay Now</button>` : ''}
+                <button class="btn btn-info btn-sm" onclick="showRentalDetails(${rental.bookingId})">Details</button>
+                ${rental.status === 'PAID' || rental.status === 'PENDING' ?
+                    `<button class="btn btn-danger btn-sm" onclick="cancelBooking(${rental.bookingId})">Cancel</button>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+async function loadAllRentals() {
+    try {
+        const rentals = await api.getRenterDetailedBookings(currentUser.userId);
+        renderAllRentals(rentals);
+    } catch (error) {
+        console.error('Error loading all rentals:', error);
+        document.getElementById('all-rentals').innerHTML = '<div class="empty">Failed to load rentals</div>';
+    }
+}
+
+function renderAllRentals(rentals) {
+    const container = document.getElementById('all-rentals');
+
+    if (!rentals || rentals.length === 0) {
+        container.innerHTML = '<div class="empty">No rentals found</div>';
+        return;
+    }
+
+    container.innerHTML = rentals.map(rental => `
+        <div class="list-item">
+            <div class="list-item-info">
+                <strong>${escapeHtml(rental.listingTitle)}</strong>
+                <span class="badge badge-${getStatusClass(rental.status)}">${rental.status}</span>
+            </div>
+            <div class="list-item-details">
+                <span class="price">€${rental.price.toFixed(2)}</span>
+                <span>${formatDate(rental.startDate)} - ${formatDate(rental.endDate)}</span>
+                <span>Booking #${rental.bookingId}</span>
+                <span>Owner: ${escapeHtml(rental.ownerName)}</span>
+            </div>
+            <div class="list-item-actions">
+                <button class="btn btn-info btn-sm" onclick="showRentalDetails(${rental.bookingId})">View</button>
+                <button class="btn btn-secondary btn-sm" onclick="contactOwner('${escapeHtml(rental.ownerEmail)}')">Contact</button>
+            </div>
+        </div>
+    `).join('');
+}
+
 
 // Helpers
 function getStatusClass(status) {

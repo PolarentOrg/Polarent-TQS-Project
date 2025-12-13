@@ -14,6 +14,7 @@
                 <!-- Renter -->
                 <li><a href="#" data-page="listings" class="active">Browse</a></li>
                 <li><a href="#" data-page="bookings">Bookings</a></li>
+                <li><a href="#" data-page="renter-dashboard">My Dashboard</a></li>
                 <li class="nav-separator">|</li>
                 <!-- Owner -->
                 <li><a href="#" data-page="dashboard">Dashboard</a></li>
@@ -70,6 +71,68 @@
                 <button id="clear-btn" class="btn btn-secondary">Clear</button>
             </div>
             <div id="listings-container" class="grid"></div>
+        </section>
+
+        <!-- Renter Dashboard Page -->
+        <section id="renter-dashboard-page" class="page">
+            <div class="page-header">
+                <h2>My Rental Dashboard</h2>
+                <div class="dashboard-actions">
+                    <select id="rental-filter" onchange="filterRentalsByStatus(this.value)">
+                        <option value="">All Rentals</option>
+                        <option value="PAID">Active</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                    <button onclick="refreshRenterDashboard()" class="btn btn-secondary">Refresh</button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <h3 id="total-rentals">0</h3>
+                    <p>Total Rentals</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="active-rentals">0</h3>
+                    <p>Active</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="pending-rentals">0</h3>
+                    <p>Pending</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="total-spent">€0</h3>
+                    <p>Total Spent</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="monthly-spent">€0</h3>
+                    <p>This Month</p>
+                </div>
+            </div>
+
+            <!-- Rental Sections -->
+            <div class="dashboard-sections">
+                <!-- Active Rentals -->
+                <div class="dashboard-section">
+                    <h3>Active Rentals</h3>
+                    <div id="active-rentals-list" class="list"></div>
+                </div>
+
+                <!-- Pending Rentals -->
+                <div class="dashboard-section">
+                    <h3>Pending Rentals</h3>
+                    <div id="pending-rentals-list" class="list"></div>
+                </div>
+            </div>
+
+            <!-- All Rentals Table -->
+            <div class="dashboard-section">
+                <h3>All My Rentals</h3>
+                <div id="all-rentals" class="list"></div>
+            </div>
         </section>
 
         <!-- Dashboard Page -->
