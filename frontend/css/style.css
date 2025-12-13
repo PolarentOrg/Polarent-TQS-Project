@@ -133,6 +133,9 @@ main { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
 /* Location */
 .location { color: var(--gray-600); font-size: 0.8125rem; margin-bottom: 0.75rem; }
 
+/* Owner */
+.owner { color: var(--gray-600); font-size: 0.8125rem; margin-bottom: 0.75rem; font-weight: 500; }
+
 /* Toast */
 #toast-container { position: fixed; bottom: 1rem; right: 1rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 2000; }
 .toast { padding: 0.75rem 1rem; border-radius: 6px; color: white; font-size: 0.875rem; animation: slideIn 0.3s ease; }
@@ -141,6 +144,70 @@ main { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
 .toast.info { background: var(--info); }
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
+/* Renter Dashboard */
+.dashboard-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.dashboard-actions select {
+    padding: 8px 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    background: white;
+    font-size: 0.875rem;
+}
+
+/* Loading State */
+#renter-dashboard-page.loading::after {
+    content: "Loading dashboard...";
+    display: block;
+    text-align: center;
+    padding: 40px;
+    color: var(--gray-600);
+    font-style: italic;
+}
+
+/* Modal para detalhes do rental */
+.rental-details-modal {
+    max-width: 500px;
+}
+
+.detail-section {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.detail-section:last-child {
+    border-bottom: none;
+}
+
+.detail-section h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.detail-section p {
+    margin: 5px 0;
+    font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard-actions select,
+    .dashboard-actions button {
+        width: 100%;
+    }
+}
 /* Responsive */
 @media (max-width: 768px) {
     nav { flex-wrap: wrap; }
@@ -148,3 +215,4 @@ main { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
     .list-item { flex-direction: column; align-items: flex-start; }
     .list-item-actions { width: 100%; justify-content: flex-end; }
 }
+

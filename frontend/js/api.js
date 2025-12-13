@@ -17,6 +17,7 @@ const api = {
     // Listings
     getListings: () => fetch(`${API_BASE}/listings/enabled`).then(r => r.ok ? r.json() : []),
     getListingById: (id) => fetch(`${API_BASE}/listings/${id}`).then(r => r.ok ? r.json() : null),
+    getEquipmentDetails: (id) => fetch(`${API_BASE}/listings/${id}/details`).then(r => r.ok ? r.json() : null),
     searchListings: (q) => fetch(`${API_BASE}/listings/search?q=${encodeURIComponent(q || '')}`).then(r => r.ok ? r.json() : []),
     getMyListings: (ownerId) => fetch(`${API_BASE}/listings/owner/${ownerId}`).then(r => r.ok ? r.json() : []),
     
@@ -47,6 +48,26 @@ const api = {
     cancelBooking: (id) => fetch(`${API_BASE}/bookings/${id}/cancel`, { method: 'PATCH' }).then(r => r.json()),
     declineBooking: (id) => fetch(`${API_BASE}/bookings/${id}/decline`, { method: 'PATCH' }).then(r => r.json()),
 
+    // Renter Dashboard
+    getRenterDashboard: (renterId) =>
+        fetch(`${API_BASE}/bookings/renter/${renterId}/dashboard`)
+            .then(r => { if (!r.ok) throw r; return r.json(); }),
+
+    getRenterRentals: (renterId, status) => {
+        const url = status
+            ? `${API_BASE}/bookings/renter/${renterId}/rentals?status=${status}`
+            : `${API_BASE}/bookings/renter/${renterId}/rentals`;
+        return fetch(url).then(r => { if (!r.ok) throw r; return r.json(); });
+    },
+
+    getRenterStats: (renterId) =>
+        fetch(`${API_BASE}/bookings/renter/${renterId}/stats`)
+            .then(r => { if (!r.ok) throw r; return r.json(); }),
+
+    getRenterDetailedBookings: (renterId) =>
+        fetch(`${API_BASE}/bookings/renter/${renterId}/detailed`)
+            .then(r => { if (!r.ok) throw r; return r.json(); }),
+
     // Requests
     createRequest: (data) => fetch(`${API_BASE}/requests`, {
         method: 'POST',
@@ -66,6 +87,8 @@ const api = {
 // Admin APIs
 const adminApi = {
     getAllUsers: () => fetch(`${API_BASE}/users`).then(r => r.ok ? r.json() : []),
+
+    getUserById: (id) => fetch(`${API_BASE}/users/${id}`).then(r => r.ok ? r.json() : null),
     activateUser: (id) => fetch(`${API_BASE}/users/${id}/activate`, { method: 'PATCH' }).then(r => r.json()),
     deactivateUser: (id) => fetch(`${API_BASE}/users/${id}/deactivate`, { method: 'PATCH' }).then(r => r.json()),
     deleteUser: (id) => fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' })

@@ -27,6 +27,32 @@ public class ListingService {
         return listingMapper.toDto(listing);
     }
 
+    public EquipmentDetailsDTO getEquipmentDetails(Long id) {
+        Listing listing = listingRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Equipment not found"));
+        
+        if (!listing.getEnabled()) {
+            throw new IllegalArgumentException("Equipment not available");
+        }
+        
+        return userRepository.findById(listing.getOwnerId())
+                .map(owner -> {
+                    EquipmentDetailsDTO details = new EquipmentDetailsDTO();
+                    details.setId(listing.getId());
+                    details.setTitle(listing.getTitle());
+                    details.setDescription(listing.getDescription());
+                    details.setDailyRate(listing.getDailyRate());
+                    details.setCity(listing.getCity());
+                    details.setDistrict(listing.getDistrict());
+                    details.setOwnerName(owner.getFirstName() + " " + owner.getLastName());
+                    details.setOwnerEmail(owner.getEmail());
+                    details.setCreatedAt(listing.getCreatedAt());
+                    details.setAvailable(listing.getEnabled());
+                    return details;
+                })
+                .orElseThrow(() -> new IllegalArgumentException("Owner not found"));
+    }
+
     public List<ListingResponseDTO> getAllListings() {
         return listingRepository.findAll().stream()
                 .map(listingMapper::toDto)
