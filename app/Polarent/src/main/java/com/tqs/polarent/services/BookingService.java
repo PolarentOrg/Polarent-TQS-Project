@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +40,12 @@ public class BookingService {
         return bookingRepository.findAll().stream()
                 .map(bookingMapper::toDto)
                 .toList();
+    }
+
+    public List<BookingResponseDTO> getBookingsByOwnerId(Long ownerId) {
+        return bookingRepository.findByOwnerId(ownerId).stream()
+                .map(bookingMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     public BookingResponseDTO updateBookingStatus(Long id, Status status) {

@@ -38,6 +38,11 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getBookingsByRequesterId(requesterId));
     }
 
+    @GetMapping("/owner/{ownerId}")
+    public ResponseEntity<List<BookingResponseDTO>> getBookingsByOwnerId(@PathVariable Long ownerId) {
+        return ResponseEntity.ok(bookingService.getBookingsByOwnerId(ownerId));
+    }
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<BookingResponseDTO> updateBookingStatus(@PathVariable Long id, @RequestParam Status status) {
         return ResponseEntity.ok(bookingService.updateBookingStatus(id, status));
