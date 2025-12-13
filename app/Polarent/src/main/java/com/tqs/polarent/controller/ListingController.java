@@ -26,6 +26,11 @@ public class ListingController {
         return ResponseEntity.ok(listingService.getListingById(id));
     }
 
+    @GetMapping("/{id}/details")
+    public ResponseEntity<EquipmentDetailsDTO> getEquipmentDetails(@PathVariable Long id) {
+        return ResponseEntity.ok(listingService.getEquipmentDetails(id));
+    }
+
     @GetMapping("/enabled")
     public ResponseEntity<List<ListingResponseDTO>> getEnabledListings() {
         return ResponseEntity.ok(listingService.getEnabledListings());

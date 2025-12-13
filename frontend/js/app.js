@@ -208,19 +208,33 @@ async function loadMyListings() {
     }
 }
 
-function renderListings(listings, containerId, isOwner) {
+async function renderListings(listings, containerId, isOwner) {
     const container = document.getElementById(containerId);
     if (!listings.length) {
         container.innerHTML = '<p class="empty">No listings found</p>';
         return;
     }
-    container.innerHTML = listings.map(l => `
+    
+    // Fetch owner details for each listing
+    const listingsWithOwners = await Promise.all(
+        listings.map(async (listing) => {
+            try {
+                const owner = await adminApi.getUserById(listing.ownerId);
+                return { ...listing, owner };
+            } catch {
+                return { ...listing, owner: null };
+            }
+        })
+    );
+    
+    container.innerHTML = listingsWithOwners.map(l => `
         <div class="card">
             <div class="card-header">
                 <h3>${escapeHtml(l.title)}</h3>
                 <span class="badge ${l.enabled ? 'badge-success' : 'badge-warning'}">${l.enabled ? 'Available' : 'Unavailable'}</span>
             </div>
             ${l.city || l.district ? `<p class="location">📍 ${escapeHtml([l.city, l.district].filter(Boolean).join(', '))}</p>` : ''}
+            ${l.owner ? `<p class="owner">👤 ${escapeHtml(l.owner.firstName)} ${escapeHtml(l.owner.lastName)}</p>` : ''}
             <div class="card-footer">
                 <span class="price">€${l.dailyRate.toFixed(2)}/day</span>
                 ${isOwner ? `
@@ -237,27 +251,29 @@ function renderListings(listings, containerId, isOwner) {
 
 async function showListingDetails(listingId) {
     try {
-        const listing = await api.getListingById(listingId);
-        if (!listing) {
-            showToast('Listing not found', 'error');
+        const details = await api.getEquipmentDetails(listingId);
+        if (!details) {
+            showToast('Equipment not found', 'error');
             return;
         }
         openModal(`
-            <h3>${escapeHtml(listing.title)}</h3>
-            <div class="listing-details">
-                <p><strong>Description:</strong> ${escapeHtml(listing.description || 'No description available')}</p>
-                <p><strong>Daily Rate:</strong> €${listing.dailyRate.toFixed(2)}/day</p>
-                ${listing.city || listing.district ? `<p><strong>Location:</strong> ${escapeHtml([listing.city, listing.district].filter(Boolean).join(', '))}</p>` : ''}
-                <p><strong>Status:</strong> <span class="badge ${listing.enabled ? 'badge-success' : 'badge-warning'}">${listing.enabled ? 'Available' : 'Unavailable'}</span></p>
-                <p><strong>Listed:</strong> ${new Date(listing.createdAt).toLocaleDateString()}</p>
+            <h3>${escapeHtml(details.title)}</h3>
+            <div class="equipment-details">
+                <p><strong>Description:</strong> ${escapeHtml(details.description || 'No description available')}</p>
+                <p><strong>Daily Rate:</strong> €${details.dailyRate.toFixed(2)}/day</p>
+                ${details.city || details.district ? `<p><strong>Location:</strong> ${escapeHtml([details.city, details.district].filter(Boolean).join(', '))}</p>` : ''}
+                <p><strong>Owner:</strong> ${escapeHtml(details.ownerName)}</p>
+                <p><strong>Contact:</strong> ${escapeHtml(details.ownerEmail)}</p>
+                <p><strong>Status:</strong> <span class="badge ${details.available ? 'badge-success' : 'badge-warning'}">${details.available ? 'Available' : 'Unavailable'}</span></p>
+                <p><strong>Listed:</strong> ${new Date(details.createdAt).toLocaleDateString()}</p>
             </div>
             <div class="modal-actions">
-                ${listing.enabled ? `<button class="btn btn-primary" onclick="closeModal(); showRentModal(${listing.id})">Rent This Item</button>` : ''}
+                ${details.available ? `<button class="btn btn-primary" onclick="closeModal(); showRentModal(${details.id})">Rent This Item</button>` : ''}
                 <button class="btn btn-secondary" onclick="closeModal()">Close</button>
             </div>
         `);
     } catch (e) {
-        showToast('Failed to load listing details', 'error');
+        showToast('Failed to load equipment details', 'error');
     }
 }
 
