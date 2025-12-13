@@ -115,8 +115,8 @@ public class BookingService {
             try {
                 Status statusEnum = Status.valueOf(status.toUpperCase());
                 bookings = bookings.stream()
-                        .filter(b -> b.getStatus() == statusEnum)
-                        .collect(Collectors.toList());
+                    .filter(b -> b.getStatus() == statusEnum)
+                    .toList();
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Invalid status value: " + status);
             }
@@ -165,7 +165,7 @@ public class BookingService {
     private List<DashboardRentalDTO> mapBookingsToDashboardRentals(List<Booking> bookings) {
         return bookings.stream()
                 .map(this::mapBookingToDashboardRental)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private DashboardRentalDTO mapBookingToDashboardRental(Booking booking) {
