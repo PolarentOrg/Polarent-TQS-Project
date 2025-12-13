@@ -18,6 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.tqs.polarent.entity.User;
 import com.tqs.polarent.repository.UserRepository;
+import com.tqs.polarent.dto.RenterDashboardDTO;
+import com.tqs.polarent.dto.DashboardRentalDTO;
 
 import java.util.List;
 import java.util.Optional;
