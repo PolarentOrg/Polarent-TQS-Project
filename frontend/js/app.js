@@ -89,6 +89,23 @@ function showApp() {
     document.getElementById('nav-links').style.display = 'flex';
     document.getElementById('user-info').style.display = 'flex';
     document.getElementById('user-display').textContent = `${currentUser.firstName} (${currentUser.role})`;
+    
+    // Show/hide nav items based on role
+    const navItems = document.querySelectorAll('#nav-links li');
+    if (currentUser.role === 'ADMIN') {
+        // Admin: only show Listings and Admin
+        navItems.forEach(item => {
+            const page = item.querySelector('a')?.dataset.page;
+            item.style.display = (page === 'listings' || page === 'admin') ? 'block' : 'none';
+        });
+    } else {
+        // Regular users: show all except admin
+        navItems.forEach(item => {
+            const page = item.querySelector('a')?.dataset.page;
+            item.style.display = page === 'admin' ? 'none' : 'block';
+        });
+    }
+    
     showPage('listings');
 }
 
@@ -113,6 +130,7 @@ function showPage(page) {
     else if (page === 'my-requests') loadMyRequests();
     else if (page === 'bookings') loadBookings();
     else if (page === 'requests') loadRequestsPage();
+    else if (page === 'admin') loadAdminPage();
 }
 
 // Modal
@@ -532,4 +550,77 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Admin functions
+async function loadAdminPage() {
+    if (currentUser.role !== 'ADMIN') {
+        showToast('Access denied', 'error');
+        return;
+    }
+    try {
+        const users = await adminApi.getAllUsers();
+        renderUsers(users);
+    } catch (e) {
+        showToast('Failed to load users', 'error');
+    }
+}
+
+function renderUsers(users) {
+    const container = document.getElementById('users-container');
+    if (!users.length) {
+        container.innerHTML = '<p class="empty">No users found</p>';
+        return;
+    }
+    container.innerHTML = users.map(u => `
+        <div class="list-item">
+            <div class="list-item-info">
+                <strong>${escapeHtml(u.firstName)} ${escapeHtml(u.lastName)}</strong>
+                <span class="badge badge-${u.role === 'ADMIN' ? 'info' : 'secondary'}">${u.role}</span>
+                <span class="badge badge-${u.active ? 'success' : 'danger'}">${u.active ? 'Active' : 'Inactive'}</span>
+            </div>
+            <div class="list-item-details">
+                <span>${escapeHtml(u.email)}</span>
+                <span>ID: ${u.id}</span>
+            </div>
+            <div class="list-item-actions">
+                ${u.active ? 
+                    `<button class="btn btn-warning btn-sm" onclick="deactivateUser(${u.id})">Deactivate</button>` :
+                    `<button class="btn btn-success btn-sm" onclick="activateUser(${u.id})">Activate</button>`
+                }
+                <button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">Delete</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function activateUser(id) {
+    try {
+        await adminApi.activateUser(id);
+        showToast('User activated');
+        loadAdminPage();
+    } catch (e) {
+        showToast('Failed to activate user', 'error');
+    }
+}
+
+async function deactivateUser(id) {
+    try {
+        await adminApi.deactivateUser(id);
+        showToast('User deactivated');
+        loadAdminPage();
+    } catch (e) {
+        showToast('Failed to deactivate user', 'error');
+    }
+}
+
+async function deleteUser(id) {
+    if (!confirm('Delete this user? This action cannot be undone.')) return;
+    try {
+        await adminApi.deleteUser(id);
+        showToast('User deleted');
+        loadAdminPage();
+    } catch (e) {
+        showToast('Failed to delete user', 'error');
+    }
 }

@@ -54,3 +54,11 @@ const api = {
         body: JSON.stringify(requestData)
     }).then(r => r.json())
 };
+
+// Admin APIs
+const adminApi = {
+    getAllUsers: () => fetch(`${API_BASE}/users`).then(r => r.ok ? r.json() : []),
+    activateUser: (id) => fetch(`${API_BASE}/users/${id}/activate`, { method: 'PATCH' }).then(r => r.json()),
+    deactivateUser: (id) => fetch(`${API_BASE}/users/${id}/deactivate`, { method: 'PATCH' }).then(r => r.json()),
+    deleteUser: (id) => fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' })
+};

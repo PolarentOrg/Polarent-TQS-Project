@@ -16,6 +16,7 @@
                 <li><a href="#" data-page="my-requests">My Requests</a></li>
                 <li><a href="#" data-page="bookings">My Bookings</a></li>
                 <li><a href="#" data-page="requests">Incoming Requests</a></li>
+                <li id="admin-nav" style="display: none;"><a href="#" data-page="admin">Admin</a></li>
             </ul>
             <div class="user-info" id="user-info" style="display: none;">
                 <span id="user-display"></span>
@@ -106,6 +107,15 @@
                 <select id="listing-select"></select>
             </div>
             <div id="requests-container" class="list"></div>
+        </section>
+
+        <!-- Admin Page -->
+        <section id="admin-page" class="page">
+            <div class="page-header">
+                <h2>Admin Panel</h2>
+                <p class="subtitle">Manage user accounts</p>
+            </div>
+            <div id="users-container" class="list"></div>
         </section>
     </main>
 
