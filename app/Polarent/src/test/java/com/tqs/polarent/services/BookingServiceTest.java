@@ -16,6 +16,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.tqs.polarent.entity.User;
+import com.tqs.polarent.repository.UserRepository;
+import com.tqs.polarent.dto.RenterDashboardDTO;
+import com.tqs.polarent.dto.DashboardRentalDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import java.time.LocalDateTime;
 
 @ExtendWith(MockitoExtension.class)
 class BookingServiceTest {
@@ -40,6 +45,9 @@ class BookingServiceTest {
     @Mock
     private BookingMapper bookingMapper;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private BookingService bookingService;
 
@@ -48,6 +56,8 @@ class BookingServiceTest {
     private Booking booking;
     private BookingRequestDTO bookingRequestDTO;
     private BookingResponseDTO bookingResponseDTO;
+    private User owner;
+    private User renter;
 
     @BeforeEach
     void setUp() {
@@ -84,6 +94,20 @@ class BookingServiceTest {
         bookingResponseDTO.setRequestId(1L);
         bookingResponseDTO.setPrice(250.0);
         bookingResponseDTO.setStatus(Status.PENDING);
+        booking.setCreatedAt(LocalDateTime.now().minusDays(5));
+        
+        owner = User.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .email("john@example.com")
+                .build();
+        renter = User.builder()
+                .id(2L)
+                .firstName("Alice")
+                .lastName("Renter")
+                .email("renter@mail.com")
+                .build();
     }
 
     @Test
@@ -209,5 +233,92 @@ class BookingServiceTest {
 
         assertThat(result).hasSize(1);
         verify(bookingRepository).findByOwnerId(1L);
+    }
+
+    @Test
+    void whenGetRenterDashboard_thenReturnStats() {
+        when(userRepository.findById(2L)).thenReturn(Optional.of(renter));
+        Booking paidBooking = Booking.builder()
+            .id(1L)
+            .requestId(1L)
+            .price(250.0)
+            .status(Status.PAID) 
+            .createdAt(LocalDateTime.now().minusDays(5))
+            .build();
+        
+        when(bookingRepository.findByRequesterId(2L)).thenReturn(List.of(paidBooking));
+        when(requestRepository.findById(1L)).thenReturn(Optional.of(request));
+        when(listingRepository.findById(1L)).thenReturn(Optional.of(listing));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
+    
+        RenterDashboardDTO dashboard = bookingService.getRenterDashboard(2L);
+    
+        assertThat(dashboard.getTotalRentals()).isEqualTo(1);
+        assertThat(dashboard.getTotalSpent()).isEqualTo(250.0);
+        assertThat(dashboard.getActiveRentalsCount()).isEqualTo(1); 
+    }
+
+    @Test
+    void whenGetRenterDashboardUserNotFound_thenThrow() {
+        when(userRepository.findById(2L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookingService.getRenterDashboard(2L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("User not found");
+    }
+
+    @Test
+    void whenGetRenterRentalsWithoutStatus_thenReturnAll() {
+        when(bookingRepository.findByRequesterId(2L)).thenReturn(List.of(booking));
+        when(requestRepository.findById(1L)).thenReturn(Optional.of(request));
+        when(listingRepository.findById(1L)).thenReturn(Optional.of(listing));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
+
+        List<DashboardRentalDTO> result =
+                bookingService.getRenterRentals(2L, null);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void whenGetRenterRentalsWithInvalidStatus_thenThrow() {
+        when(bookingRepository.findByRequesterId(2L)).thenReturn(List.of(booking));
+
+        assertThatThrownBy(() ->
+                bookingService.getRenterRentals(2L, "INVALID"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid status value");
+    }
+
+    @Test
+    void whenGetRenterStats_thenReturnStats() {
+        when(userRepository.findById(2L)).thenReturn(Optional.of(renter));
+        Booking paidBooking = Booking.builder()
+            .id(1L)
+            .requestId(1L)
+            .price(250.0)
+            .status(Status.PAID)
+            .createdAt(LocalDateTime.now().minusDays(5))
+            .build();
+        
+        when(bookingRepository.findByRequesterId(2L)).thenReturn(List.of(paidBooking));
+    
+        RenterDashboardDTO stats = bookingService.getRenterStats(2L);
+    
+        assertThat(stats.getTotalRentals()).isEqualTo(1);
+        assertThat(stats.getActiveRentalsCount()).isEqualTo(1);
+    }
+
+    @Test
+    void whenGetRenterDetailedBookings_thenReturnList() {
+        when(bookingRepository.findByRequesterId(2L)).thenReturn(List.of(booking));
+        when(requestRepository.findById(1L)).thenReturn(Optional.of(request));
+        when(listingRepository.findById(1L)).thenReturn(Optional.of(listing));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
+
+        List<DashboardRentalDTO> result =
+                bookingService.getRenterDetailedBookings(2L);
+
+        assertThat(result).hasSize(1);
     }
 }

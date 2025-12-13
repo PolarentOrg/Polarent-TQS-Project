@@ -47,6 +47,26 @@ const api = {
     updateBookingStatus: (id, status) => fetch(`${API_BASE}/bookings/${id}/status?status=${status}`, { method: 'PATCH' }).then(r => r.json()),
     cancelBooking: (id) => fetch(`${API_BASE}/bookings/${id}/cancel`, { method: 'PATCH' }).then(r => r.json()),
 
+    // Renter Dashboard
+    getRenterDashboard: (renterId) =>
+        fetch(`${API_BASE}/bookings/renter/${renterId}/dashboard`)
+            .then(r => { if (!r.ok) throw r; return r.json(); }),
+
+    getRenterRentals: (renterId, status) => {
+        const url = status
+            ? `${API_BASE}/bookings/renter/${renterId}/rentals?status=${status}`
+            : `${API_BASE}/bookings/renter/${renterId}/rentals`;
+        return fetch(url).then(r => { if (!r.ok) throw r; return r.json(); });
+    },
+
+    getRenterStats: (renterId) =>
+        fetch(`${API_BASE}/bookings/renter/${renterId}/stats`)
+            .then(r => { if (!r.ok) throw r; return r.json(); }),
+
+    getRenterDetailedBookings: (renterId) =>
+        fetch(`${API_BASE}/bookings/renter/${renterId}/detailed`)
+            .then(r => { if (!r.ok) throw r; return r.json(); }),
+
     // Requests
     createRequest: (data) => fetch(`${API_BASE}/requests`, {
         method: 'POST',

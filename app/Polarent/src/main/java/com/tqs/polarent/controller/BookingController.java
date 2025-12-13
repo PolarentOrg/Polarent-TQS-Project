@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import com.tqs.polarent.dto.DashboardRentalDTO;
+import com.tqs.polarent.dto.RenterDashboardDTO;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -57,5 +59,26 @@ public class BookingController {
     public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
         bookingService.deleteBooking(id);
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/renter/{renterId}/dashboard")
+    public ResponseEntity<RenterDashboardDTO> getRenterDashboard(@PathVariable Long renterId) {
+        return ResponseEntity.ok(bookingService.getRenterDashboard(renterId));
+    }
+
+    @GetMapping("/renter/{renterId}/rentals")
+    public ResponseEntity<List<DashboardRentalDTO>> getRenterRentals(
+            @PathVariable Long renterId,
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(bookingService.getRenterRentals(renterId, status));
+    }
+
+    @GetMapping("/renter/{renterId}/stats")
+    public ResponseEntity<RenterDashboardDTO> getRenterStats(@PathVariable Long renterId) {
+        return ResponseEntity.ok(bookingService.getRenterStats(renterId));
+    }
+
+    @GetMapping("/renter/{renterId}/detailed")
+    public ResponseEntity<List<DashboardRentalDTO>> getRenterDetailedBookings(@PathVariable Long renterId) {
+        return ResponseEntity.ok(bookingService.getRenterDetailedBookings(renterId));
     }
 }
