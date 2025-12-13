@@ -167,8 +167,8 @@ class BookingControllerTest {
 
     @Test
     void whenGetRenterRentalsWithStatus_thenReturn200() {
-        when(bookingService.getRenterRentals(eq(1L), eq("PAID")))
-                .thenReturn(Arrays.asList(dashboardRentalDTO));
+        when(bookingService.getRenterRentals(1L, "PAID"))
+            .thenReturn(List.of(dashboardRentalDTO));
 
         ResponseEntity<List<DashboardRentalDTO>> response = bookingController.getRenterRentals(1L, "PAID");
 
@@ -179,8 +179,8 @@ class BookingControllerTest {
 
     @Test
     void whenGetRenterRentalsWithoutStatus_thenReturn200() {
-        when(bookingService.getRenterRentals(eq(1L), eq(null)))
-                .thenReturn(Arrays.asList(dashboardRentalDTO));
+        when(bookingService.getRenterRentals(1L, null))
+            .thenReturn(List.of(dashboardRentalDTO));
 
         ResponseEntity<List<DashboardRentalDTO>> response = bookingController.getRenterRentals(1L, null);
 
