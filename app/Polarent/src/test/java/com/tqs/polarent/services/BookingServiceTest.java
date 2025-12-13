@@ -238,16 +238,24 @@ class BookingServiceTest {
     @Test
     void whenGetRenterDashboard_thenReturnStats() {
         when(userRepository.findById(2L)).thenReturn(Optional.of(renter));
-        when(bookingRepository.findByRequesterId(2L)).thenReturn(List.of(booking));
+        Booking paidBooking = Booking.builder()
+            .id(1L)
+            .requestId(1L)
+            .price(250.0)
+            .status(Status.PAID) 
+            .createdAt(LocalDateTime.now().minusDays(5))
+            .build();
+        
+        when(bookingRepository.findByRequesterId(2L)).thenReturn(List.of(paidBooking));
         when(requestRepository.findById(1L)).thenReturn(Optional.of(request));
         when(listingRepository.findById(1L)).thenReturn(Optional.of(listing));
         when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
-
+    
         RenterDashboardDTO dashboard = bookingService.getRenterDashboard(2L);
-
+    
         assertThat(dashboard.getTotalRentals()).isEqualTo(1);
         assertThat(dashboard.getTotalSpent()).isEqualTo(250.0);
-        assertThat(dashboard.getActiveRentalsCount()).isEqualTo(1);
+        assertThat(dashboard.getActiveRentalsCount()).isEqualTo(1); 
     }
 
     @Test
@@ -285,10 +293,18 @@ class BookingServiceTest {
     @Test
     void whenGetRenterStats_thenReturnStats() {
         when(userRepository.findById(2L)).thenReturn(Optional.of(renter));
-        when(bookingRepository.findByRequesterId(2L)).thenReturn(List.of(booking));
-
+        Booking paidBooking = Booking.builder()
+            .id(1L)
+            .requestId(1L)
+            .price(250.0)
+            .status(Status.PAID)
+            .createdAt(LocalDateTime.now().minusDays(5))
+            .build();
+        
+        when(bookingRepository.findByRequesterId(2L)).thenReturn(List.of(paidBooking));
+    
         RenterDashboardDTO stats = bookingService.getRenterStats(2L);
-
+    
         assertThat(stats.getTotalRentals()).isEqualTo(1);
         assertThat(stats.getActiveRentalsCount()).isEqualTo(1);
     }
