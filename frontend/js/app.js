@@ -126,6 +126,7 @@ function showPage(page) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(`${page}-page`).classList.add('active');
     if (page === 'listings') loadListings();
+    else if (page === 'dashboard') loadDashboard();
     else if (page === 'my-listings') loadMyListings();
     else if (page === 'my-requests') loadMyRequests();
     else if (page === 'bookings') loadBookings();
@@ -217,6 +218,50 @@ async function clearAll() {
     await loadListings();
 }
 
+async function loadDashboard() {
+    try {
+        const [listings, bookings, requests] = await Promise.all([
+            api.getMyListings(currentUser.userId),
+            api.getBookingsByOwner(currentUser.userId),
+            api.getRequestsByListing() // We'll need to aggregate this
+        ]);
+
+        // Update stats
+        document.getElementById('total-listings').textContent = listings.length;
+        document.getElementById('active-bookings').textContent = bookings.filter(b => b.status === 'PAID' || b.status === 'ACCEPTED').length;
+        
+        const totalRevenue = bookings.filter(b => b.status === 'PAID' || b.status === 'COMPLETED').reduce((sum, b) => sum + b.price, 0);
+        document.getElementById('total-revenue').textContent = `€${totalRevenue.toFixed(2)}`;
+
+        // Recent bookings
+        const recentBookings = bookings.slice(0, 5);
+        renderDashboardBookings(recentBookings);
+
+    } catch (e) {
+        showToast('Failed to load dashboard', 'error');
+    }
+}
+
+function renderDashboardBookings(bookings) {
+    const container = document.getElementById('recent-bookings');
+    if (!bookings.length) {
+        container.innerHTML = '<p class="empty">No recent bookings</p>';
+        return;
+    }
+    container.innerHTML = bookings.map(b => `
+        <div class="list-item">
+            <div class="list-item-info">
+                <strong>Booking #${b.id}</strong>
+                <span class="badge badge-${getStatusClass(b.status)}">${b.status}</span>
+            </div>
+            <div class="list-item-details">
+                <span>€${b.price.toFixed(2)}</span>
+                <span>${new Date(b.createdAt).toLocaleDateString()}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
 async function loadMyListings() {
     try {
         const myListings = await api.getMyListings(currentUser.userId);
@@ -238,7 +283,6 @@ function renderListings(listings, containerId, isOwner) {
                 <h3>${escapeHtml(l.title)}</h3>
                 <span class="badge ${l.enabled ? 'badge-success' : 'badge-warning'}">${l.enabled ? 'Available' : 'Unavailable'}</span>
             </div>
-            <p class="description">${escapeHtml(l.description || 'No description')}</p>
             ${l.city || l.district ? `<p class="location">📍 ${escapeHtml([l.city, l.district].filter(Boolean).join(', '))}</p>` : ''}
             <div class="card-footer">
                 <span class="price">€${l.dailyRate.toFixed(2)}/day</span>
@@ -246,11 +290,38 @@ function renderListings(listings, containerId, isOwner) {
                     <button class="btn btn-secondary btn-sm" onclick="showEditListingModal(${l.id})">Edit</button>
                     <button class="btn btn-danger btn-sm" onclick="deleteListing(${l.id})">Delete</button>
                 ` : `
+                    <button class="btn btn-info btn-sm" onclick="showListingDetails(${l.id})">Details</button>
                     <button class="btn btn-primary btn-sm" onclick="showRentModal(${l.id})">Rent</button>
                 `}
             </div>
         </div>
     `).join('');
+}
+
+async function showListingDetails(listingId) {
+    try {
+        const listing = await api.getListingById(listingId);
+        if (!listing) {
+            showToast('Listing not found', 'error');
+            return;
+        }
+        openModal(`
+            <h3>${escapeHtml(listing.title)}</h3>
+            <div class="listing-details">
+                <p><strong>Description:</strong> ${escapeHtml(listing.description || 'No description available')}</p>
+                <p><strong>Daily Rate:</strong> €${listing.dailyRate.toFixed(2)}/day</p>
+                ${listing.city || listing.district ? `<p><strong>Location:</strong> ${escapeHtml([listing.city, listing.district].filter(Boolean).join(', '))}</p>` : ''}
+                <p><strong>Status:</strong> <span class="badge ${listing.enabled ? 'badge-success' : 'badge-warning'}">${listing.enabled ? 'Available' : 'Unavailable'}</span></p>
+                <p><strong>Listed:</strong> ${new Date(listing.createdAt).toLocaleDateString()}</p>
+            </div>
+            <div class="modal-actions">
+                ${listing.enabled ? `<button class="btn btn-primary" onclick="closeModal(); showRentModal(${listing.id})">Rent This Item</button>` : ''}
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        `);
+    } catch (e) {
+        showToast('Failed to load listing details', 'error');
+    }
 }
 
 function showCreateListingModal() {

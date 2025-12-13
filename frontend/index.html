@@ -11,11 +11,17 @@
         <nav>
             <div class="logo">📷 Polarent</div>
             <ul class="nav-links" id="nav-links" style="display: none;">
-                <li><a href="#" data-page="listings" class="active">Listings</a></li>
+                <!-- Renter -->
+                <li><a href="#" data-page="listings" class="active">Browse</a></li>
+                <li><a href="#" data-page="bookings">Bookings</a></li>
+                <li class="nav-separator">|</li>
+                <!-- Owner -->
+                <li><a href="#" data-page="dashboard">Dashboard</a></li>
                 <li><a href="#" data-page="my-listings">My Listings</a></li>
+
                 <li><a href="#" data-page="my-requests">My Requests</a></li>
                 <li><a href="#" data-page="bookings">My Bookings</a></li>
-                <li><a href="#" data-page="requests">Incoming Requests</a></li>
+                <li><a href="#" data-page="requests">Requests</a></li>
                 <li id="admin-nav" style="display: none;"><a href="#" data-page="admin">Admin</a></li>
             </ul>
             <div class="user-info" id="user-info" style="display: none;">
@@ -68,6 +74,41 @@
                 <button id="clear-btn" class="btn btn-secondary">Clear</button>
             </div>
             <div id="listings-container" class="grid"></div>
+        </section>
+
+        <!-- Dashboard Page -->
+        <section id="dashboard-page" class="page">
+            <div class="page-header">
+                <h2>Owner Dashboard</h2>
+            </div>
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <h3 id="total-listings">0</h3>
+                    <p>Total Listings</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="active-bookings">0</h3>
+                    <p>Active Bookings</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="pending-requests">0</h3>
+                    <p>Pending Requests</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="total-revenue">€0</h3>
+                    <p>Total Revenue</p>
+                </div>
+            </div>
+            <div class="dashboard-sections">
+                <div class="dashboard-section">
+                    <h3>Recent Bookings</h3>
+                    <div id="recent-bookings" class="list"></div>
+                </div>
+                <div class="dashboard-section">
+                    <h3>Pending Requests</h3>
+                    <div id="dashboard-requests" class="list"></div>
+                </div>
+            </div>
         </section>
 
         <!-- My Listings Page -->

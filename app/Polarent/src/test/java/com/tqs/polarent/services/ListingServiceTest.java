@@ -45,6 +45,31 @@ class ListingServiceTest {
     }
 
     @Test
+    void whenGetListingById_thenReturnListing() {
+        Listing listing = Listing.builder().id(1L).title("Camera").build();
+        ListingResponseDTO dto = new ListingResponseDTO();
+        dto.setId(1L);
+        dto.setTitle("Camera");
+        when(listingRepository.findById(1L)).thenReturn(Optional.of(listing));
+        when(listingMapper.toDto(listing)).thenReturn(dto);
+
+        ListingResponseDTO result = listingService.getListingById(1L);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getTitle()).isEqualTo("Camera");
+        verify(listingRepository).findById(1L);
+    }
+
+    @Test
+    void whenGetListingByIdNotFound_thenThrowException() {
+        when(listingRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> listingService.getListingById(999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Listing not found");
+    }
+
+    @Test
     void getListingsByOwner_ReturnsList() {
         Listing listing = Listing.builder().id(1L).ownerId(5L).build();
         ListingResponseDTO dto = new ListingResponseDTO();
