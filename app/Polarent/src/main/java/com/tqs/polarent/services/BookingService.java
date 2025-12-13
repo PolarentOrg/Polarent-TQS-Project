@@ -63,6 +63,10 @@ public class BookingService {
         return updateBookingStatus(id, Status.CANCELLED);
     }
 
+    public BookingResponseDTO declineBooking(Long id) {
+        return updateBookingStatus(id, Status.DECLINED);
+    }
+
     public void deleteBooking(Long id) {
         if (!bookingRepository.existsById(id)) {
             throw new IllegalArgumentException("Booking not found");

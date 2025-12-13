@@ -143,6 +143,17 @@ class BookingControllerTest {
     }
 
     @Test
+    void whenDeclineBooking_thenReturn200() {
+        responseDTO.setStatus(Status.DECLINED);
+        when(bookingService.declineBooking(1L)).thenReturn(responseDTO);
+
+        ResponseEntity<BookingResponseDTO> response = bookingController.declineBooking(1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().getStatus()).isEqualTo(Status.DECLINED);
+    }
+
+    @Test
     void whenDeleteBooking_thenReturn204() {
         doNothing().when(bookingService).deleteBooking(1L);
 

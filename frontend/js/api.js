@@ -46,6 +46,7 @@ const api = {
     getBookingsByOwner: (ownerId) => fetch(`${API_BASE}/bookings/owner/${ownerId}`).then(r => r.ok ? r.json() : []),
     updateBookingStatus: (id, status) => fetch(`${API_BASE}/bookings/${id}/status?status=${status}`, { method: 'PATCH' }).then(r => r.json()),
     cancelBooking: (id) => fetch(`${API_BASE}/bookings/${id}/cancel`, { method: 'PATCH' }).then(r => r.json()),
+    declineBooking: (id) => fetch(`${API_BASE}/bookings/${id}/decline`, { method: 'PATCH' }).then(r => r.json()),
 
     // Renter Dashboard
     getRenterDashboard: (renterId) =>
