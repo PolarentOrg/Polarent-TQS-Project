@@ -44,6 +44,11 @@ public class RequestController {
         return ResponseEntity.status(201).body(requestService.createRequest(dto));
     }
 
+    @PostMapping("/batch")
+    public ResponseEntity<List<RequestResponseDTO>> createBatchRequests(@RequestBody List<RequestRequestDTO> dtos) {
+        return ResponseEntity.status(201).body(requestService.createBatchRequests(dtos));
+    }
+
     @PostMapping("/accept")
     public ResponseEntity<BookingResponseDTO> convertToBooking(@RequestBody RequestResponseDTO requestDto) {
         Listing listing = listingRepository.findById(requestDto.getListingId())
