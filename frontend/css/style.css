@@ -451,3 +451,17 @@ main { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
     }
 }
 
+
+/* Commission Config */
+.commission-config {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+.commission-display { font-size: 1.1rem; }
+.commission-display strong { color: #007bff; font-size: 1.3rem; }
+.commission-form { display: flex; gap: 0.5rem; }
+.commission-form input { width: 100px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; }
