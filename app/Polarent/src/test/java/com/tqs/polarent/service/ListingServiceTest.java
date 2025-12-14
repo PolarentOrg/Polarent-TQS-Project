@@ -21,6 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
 @ExtendWith(MockitoExtension.class)
 class ListingServiceTest {
@@ -62,6 +64,7 @@ class ListingServiceTest {
 
         camera1 = Listing.builder()
                 .id(2L)
+                .ownerId(11L)
                 .title("Canon EOS R5")
                 .description("Professional camera")
                 .dailyRate(89.99)
@@ -70,6 +73,7 @@ class ListingServiceTest {
 
         camera2 = Listing.builder()
                 .id(3L)
+                .ownerId(12L)
                 .title("Sony A7IV")
                 .description("Mirrorless camera")
                 .dailyRate(79.99)
@@ -278,5 +282,146 @@ class ListingServiceTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle()).isEqualTo("Canon EOS R5");
+    }
+
+    @Test
+    void whenRemoveInappropriateListing_thenDeleteListing() {
+        Listing testListing = Listing.builder()
+                .id(5L)
+                .ownerId(10L)
+                .title("Test Listing")
+                .description("Test Description")
+                .dailyRate(50.0)
+                .enabled(true)
+                .build();
+
+        when(listingRepository.findById(5L)).thenReturn(Optional.of(testListing));
+        doNothing().when(listingRepository).delete(testListing);
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outContent));
+
+        try {
+            listingService.removeInappropriateListing(5L);
+            System.out.flush();
+            verify(listingRepository).findById(5L);
+            verify(listingRepository).delete(testListing);
+            String output = outContent.toString();
+            assertThat(output).contains("[ADMIN ACTION] Removing inappropriate listing:");
+            assertThat(output).contains("Listing ID: 5"); // Agora deve encontrar
+            assertThat(output).contains("Title: 'Test Listing'");
+            assertThat(output).contains("Owner ID: 10");
+            assertThat(output).contains("Reason: Inappropriate content");
+            assertThat(output).contains("[ADMIN ACTION] Listing successfully removed.");
+        } finally {
+            System.setOut(originalOut);
+        }
+    }
+
+    @Test
+    void whenRemoveInappropriateListingNotFound_thenThrowException() {
+        when(listingRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> listingService.removeInappropriateListing(999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Listing not found with ID: 999");
+        verify(listingRepository, never()).delete(any());
+    }
+
+    @Test
+    void whenGetAllListingsForAdmin_thenReturnAllListings() {
+        Listing disabledListing = Listing.builder()
+                .id(4L)
+                .title("Disabled Listing")
+                .enabled(false)
+                .build();
+
+        when(listingRepository.findAll()).thenReturn(Arrays.asList(listing, camera1, camera2, disabledListing));
+        when(listingMapper.toDto(listing)).thenReturn(responseDTO);
+        when(listingMapper.toDto(camera1)).thenReturn(camera1Dto);
+        when(listingMapper.toDto(camera2)).thenReturn(camera2Dto);
+
+        ListingResponseDTO disabledDto = new ListingResponseDTO();
+        disabledDto.setId(4L);
+        disabledDto.setTitle("Disabled Listing");
+        disabledDto.setEnabled(false);
+        when(listingMapper.toDto(disabledListing)).thenReturn(disabledDto);
+
+        List<ListingResponseDTO> result = listingService.getAllListingsForAdmin();
+
+        assertThat(result).hasSize(4);
+        assertThat(result).extracting("enabled").contains(true, true, true, false);
+        verify(listingRepository).findAll();
+    }
+
+    @Test
+    void whenGetAllListingsForAdminEmptyDatabase_thenReturnEmptyList() {
+        when(listingRepository.findAll()).thenReturn(Collections.emptyList());
+
+        List<ListingResponseDTO> result = listingService.getAllListingsForAdmin();
+
+        assertThat(result).isEmpty();
+        verify(listingRepository).findAll();
+    }
+
+    @Test
+    void whenRemoveInappropriateListingWithDisabledListing_thenDeleteSuccessfully() {
+        Listing disabledListing = Listing.builder()
+                .id(6L)
+                .ownerId(30L) // ADICIONAR ownerId
+                .title("Spam Listing")
+                .enabled(false)
+                .build();
+
+        when(listingRepository.findById(6L)).thenReturn(Optional.of(disabledListing));
+        doNothing().when(listingRepository).delete(disabledListing);
+
+        // Capture System.out output
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outContent));
+
+        try {
+            listingService.removeInappropriateListing(6L);
+
+            System.out.flush();
+            String output = outContent.toString();
+
+            verify(listingRepository).delete(disabledListing);
+
+            assertThat(output).contains("Title: 'Spam Listing'");
+            assertThat(output).contains("Owner ID: 30"); // Verificar ownerId
+            assertThat(output).contains("Reason: Inappropriate content");
+        } finally {
+            System.setOut(originalOut);
+        }
+    }
+
+    @Test
+    void whenRemoveInappropriateListingWithSpecialCharactersInTitle_thenDeleteSuccessfully() {
+        Listing specialListing = Listing.builder()
+                .id(7L)
+                .title("Camera @#$%^&*()!\"'")
+                .ownerId(20L)
+                .build();
+
+        when(listingRepository.findById(7L)).thenReturn(Optional.of(specialListing));
+        doNothing().when(listingRepository).delete(specialListing);
+
+        // Capture System.out output
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outContent));
+
+        try {
+            listingService.removeInappropriateListing(7L);
+
+            verify(listingRepository).delete(specialListing);
+
+            String output = outContent.toString();
+            assertThat(output).contains("Camera @#$%^&*()!\"'");
+        } finally {
+            System.setOut(originalOut);
+        }
     }
 }

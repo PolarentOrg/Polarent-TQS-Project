@@ -239,6 +239,23 @@
                 <h3>User Management</h3>
                 <div id="users-container" class="list"></div>
             </div>
+            <div id="users-container" class="list"></div>
+            <div class="dashboard-section">
+                <h3>📋 Manage Listings</h3>
+                <div class="admin-actions">
+                    <button onclick="loadAllListingsForAdmin()" class="btn btn-primary">
+                        🔍 View All Listings
+                    </button>
+                    <div class="admin-search">
+                        <input type="text" id="admin-search-input" placeholder="Search listings..."
+                               onkeyup="filterAdminListings()">
+                    </div>
+                </div>
+
+                <div id="admin-listings-container" class="list">
+                    <!-- Listings will be loaded here -->
+                </div>
+            </div>
         </section>
     </main>
 

@@ -1,6 +1,7 @@
 // State
 let currentUser = null;
 let allListings = [];
+let adminListings = [];
 
 // DOM Elements
 const modal = document.getElementById('modal');
@@ -90,20 +91,10 @@ function showApp() {
     document.getElementById('user-info').style.display = 'flex';
     document.getElementById('user-display').textContent = `${currentUser.firstName} (${currentUser.role})`;
     
-    // Show/hide nav items based on role
-    const navItems = document.querySelectorAll('#nav-links li');
-    if (currentUser.role === 'ADMIN') {
-        // Admin: only show Listings and Admin
-        navItems.forEach(item => {
-            const page = item.querySelector('a')?.dataset.page;
-            item.style.display = (page === 'listings' || page === 'admin') ? 'block' : 'none';
-        });
-    } else {
-        // Regular users: show all except admin
-        navItems.forEach(item => {
-            const page = item.querySelector('a')?.dataset.page;
-            item.style.display = page === 'admin' ? 'none' : 'block';
-        });
+    // Mostrar/ocultar link de admin baseado no role
+    const adminNav = document.getElementById('admin-nav');
+    if (adminNav) {
+        adminNav.style.display = currentUser.role === 'ADMIN' ? 'block' : 'none';
     }
     
     showPage('listings');
@@ -795,6 +786,7 @@ async function loadAdminPage() {
         ]);
         document.getElementById('current-commission').textContent = `${commission}%`;
         renderUsers(users);
+        await loadAllListingsForAdmin();
     } catch (e) {
         showToast('Failed to load admin data', 'error');
     }
@@ -876,3 +868,171 @@ async function deleteUser(id) {
         showToast('Failed to delete user', 'error');
     }
 }
+
+async function loadAllListingsForAdmin() {
+    if (currentUser.role !== 'ADMIN') {
+        console.error('❌ Access denied - User role:', currentUser.role);
+        showToast('Access denied. Admin privileges required.', 'error');
+        return;
+    }
+
+    try {
+        console.log('🔍 Fetching admin listings...');
+        console.log('📡 API URL:', `${API_BASE || '/api'}/listings/admin/all`);
+
+        adminListings = await api.getAllListingsForAdmin();
+
+        console.log('✅ Listings loaded:', adminListings);
+        console.log('📊 Total listings:', adminListings.length);
+
+        renderAdminListings(adminListings);
+    } catch (error) {
+        console.error('❌ Failed to load listings:', error);
+        console.error('Error details:', error.message, error.stack);
+        showToast(`Failed to load listings: ${error.message}`, 'error');
+    }
+}
+
+// Renderizar listagens do admin
+function renderAdminListings(listings) {
+    const container = document.getElementById('admin-listings-container');
+
+    if (!listings || listings.length === 0) {
+        container.innerHTML = '<div class="empty">No listings found</div>';
+        return;
+    }
+
+    container.innerHTML = listings.map(listing => {
+        const isEnabled = listing.enabled === true;
+
+        return `
+            <div class="admin-listing-card ${!isEnabled ? 'disabled' : ''}">
+                <div class="listing-meta">
+                    <span>ID: ${listing.id}</span>
+                    <span class="badge ${isEnabled ? 'badge-success' : 'badge-warning'}">
+                        ${isEnabled ? 'Enabled' : 'Disabled'}
+                    </span>
+                    <span>Owner ID: ${listing.ownerId}</span>
+                    <span>Created: ${new Date(listing.createdAt).toLocaleDateString()}</span>
+                </div>
+
+                <div class="listing-content">
+                    <h4>${escapeHtml(listing.title)}</h4>
+                    <p>${escapeHtml(listing.description || 'No description provided')}</p>
+                    <p><strong>Daily Rate:</strong> €${listing.dailyRate.toFixed(2)}</p>
+                    <p><strong>Location:</strong> ${escapeHtml(listing.city || 'N/A')}, ${escapeHtml(listing.district || 'N/A')}</p>
+                </div>
+
+                <div class="listing-owner">
+                    <strong>Listing Owner:</strong> User #${listing.ownerId}
+                    <br>
+                    <small>Listed on: ${new Date(listing.createdAt).toLocaleString()}</small>
+                </div>
+
+                <div class="admin-listing-actions">
+                    <button class="btn btn-info btn-sm" onclick="viewAdminListingDetails(${listing.id})">
+                        View Details
+                    </button>
+                    <button class="btn btn-danger btn-sm"
+                            onclick="removeInappropriateListing(${listing.id}, '${escapeHtml(listing.title)}')">
+                        Remove Listing
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Filtrar listagens do admin
+function filterAdminListings() {
+    const searchInput = document.getElementById('admin-search-input');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
+    if (!searchTerm) {
+        renderAdminListings(adminListings);
+        return;
+    }
+
+    const filtered = adminListings.filter(listing =>
+        listing.title.toLowerCase().includes(searchTerm) ||
+        listing.description?.toLowerCase().includes(searchTerm) ||
+        listing.city?.toLowerCase().includes(searchTerm) ||
+        listing.district?.toLowerCase().includes(searchTerm)
+    );
+
+    renderAdminListings(filtered);
+}
+
+// Ver detalhes de uma listagem (modal)
+async function viewAdminListingDetails(listingId) {
+    try {
+        const listing = adminListings.find(l => l.id === listingId) || await api.getListingById(listingId);
+
+        if (!listing) {
+            showToast('Listing not found', 'error');
+            return;
+        }
+
+        openModal(`
+            <h3>📋 Listing Details (Admin View)</h3>
+            <div class="listing-details">
+                <p><strong>Listing ID:</strong> ${listing.id}</p>
+                <p><strong>Title:</strong> ${escapeHtml(listing.title)}</p>
+                <p><strong>Description:</strong> ${escapeHtml(listing.description || 'No description')}</p>
+                <p><strong>Daily Rate:</strong> €${listing.dailyRate.toFixed(2)}</p>
+                <p><strong>Status:</strong>
+                    <span class="badge ${listing.enabled ? 'badge-success' : 'badge-warning'}">
+                        ${listing.enabled ? 'ENABLED' : 'DISABLED'}
+                    </span>
+                </p>
+                <p><strong>Location:</strong> ${escapeHtml(listing.city || 'N/A')}, ${escapeHtml(listing.district || 'N/A')}</p>
+                <p><strong>Owner ID:</strong> ${listing.ownerId}</p>
+                <p><strong>Created:</strong> ${new Date(listing.createdAt).toLocaleString()}</p>
+                <p><strong>Last Updated:</strong> ${new Date(listing.updatedAt).toLocaleString()}</p>
+            </div>
+
+            <div class="warning-box">
+                <strong>⚠️ Admin Action</strong>
+                <p>You are about to perform an administrative action on this listing.</p>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-danger"
+                        onclick="closeModal(); removeInappropriateListing(${listing.id}, '${escapeHtml(listing.title)}')">
+                    Remove This Listing
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal()">
+                    Close
+                </button>
+            </div>
+        `);
+    } catch (error) {
+        console.error('Failed to load listing details:', error);
+        showToast('Failed to load listing details', 'error');
+    }
+}
+
+// Remover listagem inadequada
+async function removeInappropriateListing(listingId, listingTitle) {
+    if (currentUser.role !== 'ADMIN') {
+        showToast('Access denied. Admin privileges required.', 'error');
+        return;
+    }
+
+    if (!confirm(`🚨 REMOVE LISTING\n\nAre you sure you want to remove this listing?\n\n"${listingTitle}"\n\nThis action is permanent and cannot be undone.`)) {
+        showToast('Action cancelled', 'info');
+        return;
+    }
+
+    try {
+        await api.removeInappropriateListing(listingId);
+        showToast(`✅ Listing "${listingTitle}" has been removed`, 'success');
+
+        // Atualizar a lista
+        await loadAllListingsForAdmin();
+    } catch (error) {
+        console.error('Failed to remove listing:', error);
+        showToast('Failed to remove listing', 'error');
+    }
+}
+
