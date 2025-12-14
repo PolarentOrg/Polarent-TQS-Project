@@ -75,7 +75,7 @@ public class RequestService {
 
         return dtos.stream()
                 .map(dto -> requestMapper.toDto(requestRepository.save(requestMapper.toEntity(dto))))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<RequestResponseDTO> getRequestsByListingAndRequester(Long listingId, Long requesterId) {
