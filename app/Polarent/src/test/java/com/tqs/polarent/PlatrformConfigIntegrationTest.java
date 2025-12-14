@@ -1,4 +1,4 @@
-package com.tqs.polarent.integration;
+package com.tqs.polarent;
 
 import com.tqs.polarent.entity.PlatformConfig;
 import com.tqs.polarent.repository.PlatformConfigRepository;

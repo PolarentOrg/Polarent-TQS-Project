@@ -789,10 +789,32 @@ async function loadAdminPage() {
         return;
     }
     try {
-        const users = await adminApi.getAllUsers();
+        const [users, commission] = await Promise.all([
+            adminApi.getAllUsers(),
+            adminApi.getCommissionFee()
+        ]);
+        document.getElementById('current-commission').textContent = `${commission}%`;
         renderUsers(users);
     } catch (e) {
-        showToast('Failed to load users', 'error');
+        showToast('Failed to load admin data', 'error');
+    }
+}
+
+async function updateCommissionFee() {
+    const input = document.getElementById('commission-input');
+    const value = parseFloat(input.value);
+    if (isNaN(value) || value < 0 || value > 100) {
+        showToast('Enter a valid percentage (0-100)', 'error');
+        return;
+    }
+    try {
+        const res = await adminApi.setCommissionFee(value);
+        if (!res.ok) throw new Error();
+        document.getElementById('current-commission').textContent = `${value}%`;
+        input.value = '';
+        showToast('Commission fee updated');
+    } catch (e) {
+        showToast('Failed to update commission fee', 'error');
     }
 }
 

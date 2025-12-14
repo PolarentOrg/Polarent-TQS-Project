@@ -1,4 +1,4 @@
-package com.tqs.polarent.controller;
+package com.tqs.polarent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tqs.polarent.dto.UserRequestDTO;
