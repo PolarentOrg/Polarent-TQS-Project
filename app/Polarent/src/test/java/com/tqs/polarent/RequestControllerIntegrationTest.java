@@ -140,4 +140,48 @@ class RequestControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void createBatchRequests_Success() throws Exception {
+        Listing listing2 = listingRepository.save(Listing.builder()
+                .ownerId(owner.getId())
+                .title("Sony A7III")
+                .description("Mirrorless camera")
+                .dailyRate(40.0)
+                .enabled(true)
+                .build());
+
+        String batchJson = String.format("""
+            [
+                {
+                    "listingId": %d,
+                    "requesterId": %d,
+                    "initialDate": 20251215,
+                    "duration": 2
+                },
+                {
+                    "listingId": %d,
+                    "requesterId": %d,
+                    "initialDate": 20251220,
+                    "duration": 3
+                }
+            ]
+            """, listing.getId(), requester.getId(), listing2.getId(), requester.getId());
+
+        mockMvc.perform(post("/api/requests/batch")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(batchJson))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].listingId", is(listing.getId().intValue())))
+                .andExpect(jsonPath("$[1].listingId", is(listing2.getId().intValue())));
+    }
+
+    @Test
+    void createBatchRequests_EmptyList() throws Exception {
+        mockMvc.perform(post("/api/requests/batch")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("[]"))
+                .andExpect(status().isBadRequest());
+    }
 }
