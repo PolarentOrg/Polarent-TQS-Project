@@ -59,6 +59,7 @@ public class RequestService {
         Long requesterId = dtos.get(0).getRequesterId();
         Set<Long> listingIds = new HashSet<>();
 
+        // First pass: validate requester consistency and check for duplicates
         for (RequestRequestDTO dto : dtos) {
             if (!requesterId.equals(dto.getRequesterId())) {
                 throw new IllegalArgumentException("All requests must have the same requester");
@@ -66,6 +67,10 @@ public class RequestService {
             if (!listingIds.add(dto.getListingId())) {
                 throw new IllegalArgumentException("Duplicate listing ID in batch: " + dto.getListingId());
             }
+        }
+
+        // Second pass: validate listings exist and ownership
+        for (RequestRequestDTO dto : dtos) {
             Listing listing = listingRepository.findById(dto.getListingId())
                     .orElseThrow(() -> new IllegalArgumentException("Listing not found: " + dto.getListingId()));
             if (listing.getOwnerId().equals(requesterId)) {
