@@ -62,6 +62,11 @@ public class ListingController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/{userId}/{listingId}/enable")
+    public ResponseEntity<ListingResponseDTO> enableListing(@PathVariable Long userId, @PathVariable Long listingId) {
+        return ResponseEntity.ok(listingService.enableListing(userId, listingId));
+    }
+
     // Search
     @GetMapping("/search")
     public ResponseEntity<List<ListingResponseDTO>> searchListings(
