@@ -20,7 +20,7 @@ header { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: sti
 nav { max-width: 1200px; margin: 0 auto; padding: 1rem; display: flex; align-items: center; gap: 2rem; }
 .logo { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
 .nav-links { display: flex; list-style: none; gap: 1.5rem; flex: 1; }
-.nav-links a { text-decoration: none; color: var(--gray-600); padding: 0.5rem; border-radius: 4px; transition: all 0.2s; }
+.nav-links a { text-decoration: none; color: var(--gray-600); padding: 0.5rem 0.75rem; border-radius: 4px; transition: all 0.2s; white-space: nowrap; }
 .nav-links a:hover, .nav-links a.active { color: var(--primary); background: var(--gray-100); }
 .nav-separator { color: var(--gray-300); font-weight: 300; align-self: center; }
 .user-info { display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; }

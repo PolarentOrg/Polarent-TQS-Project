@@ -3,6 +3,17 @@ let currentUser = null;
 let allListings = [];
 let adminListings = [];
 
+// Utility functions
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
+}
+
+function dayOfYearToDate(dayOfYear, year = new Date().getFullYear()) {
+    const date = new Date(year, 0, dayOfYear);
+    return date.toLocaleDateString();
+}
+
 // DOM Elements
 const modal = document.getElementById('modal');
 const modalBody = document.getElementById('modal-body');
@@ -387,29 +398,54 @@ function showRentModal(listingId) {
         <p class="price">€${listing.dailyRate.toFixed(2)}/day</p>
         <form id="rent-form">
             <input type="hidden" name="listingId" value="${listingId}">
-            <div class="form-group"><label>Start Day (day of year)</label><input type="number" name="initialDate" min="1" max="365" required></div>
-            <div class="form-group"><label>Duration (days)</label><input type="number" name="duration" min="1" required></div>
+            <div class="form-group"><label>Start Date</label><input type="date" name="startDate" required></div>
+            <div class="form-group"><label>End Date</label><input type="date" name="endDate" required></div>
             <div class="form-group"><label>Note (optional)</label><textarea name="note" rows="2"></textarea></div>
             <p class="total">Total: €<span id="rent-total">0.00</span></p>
             <button type="submit" class="btn btn-primary">Submit Request</button>
         </form>
     `);
+    
     const form = document.getElementById('rent-form');
-    form.duration.addEventListener('input', () => {
-        document.getElementById('rent-total').textContent = ((parseInt(form.duration.value) || 0) * listing.dailyRate).toFixed(2);
-    });
+    const startDateInput = form.startDate;
+    const endDateInput = form.endDate;
+    const totalSpan = document.getElementById('rent-total');
+    
+    function updateTotal() {
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        if (startDate && endDate && endDate > startDate) {
+            const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            const total = days * listing.dailyRate;
+            totalSpan.textContent = total.toFixed(2);
+        } else {
+            totalSpan.textContent = '0.00';
+        }
+    }
+    
+    startDateInput.addEventListener('change', updateTotal);
+    endDateInput.addEventListener('change', updateTotal);
     form.addEventListener('submit', (e) => submitRentRequest(e, listing));
 }
 
 async function submitRentRequest(e, listing) {
     e.preventDefault();
     const form = e.target;
+    const startDate = new Date(form.startDate.value);
+    const endDate = new Date(form.endDate.value);
+    const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+    
+    if (duration <= 0) {
+        showToast('End date must be after start date', 'error');
+        return;
+    }
+
     try {
         await api.createRequest({
             listingId: listing.id,
             requesterId: currentUser.userId,
-            initialDate: parseInt(form.initialDate.value),
-            duration: parseInt(form.duration.value),
+            initialDate: startDate.getDate() + (startDate.getMonth() * 31), // Convert to day approximation
+            duration: duration,
             note: form.note.value || null
         });
         showToast('Request submitted!');
@@ -594,7 +630,7 @@ function renderRequests(requests) {
                 <span>From User #${r.requesterId}</span>
             </div>
             <div class="list-item-details">
-                <span>Start: Day ${r.initialDate}</span>
+                <span>Start: ${dayOfYearToDate(r.initialDate)}</span>
                 <span>Duration: ${r.duration} days</span>
                 ${r.note ? `<span class="note">"${escapeHtml(r.note)}"</span>` : ''}
             </div>
@@ -638,7 +674,7 @@ function renderMyRequests(requests) {
                 <span>Listing #${r.listingId}</span>
             </div>
             <div class="list-item-details">
-                <span>Start: Day ${r.initialDate}</span>
+                <span>Start: ${dayOfYearToDate(r.initialDate)}</span>
                 <span>Duration: ${r.duration} days</span>
                 ${r.note ? `<span class="note">"${escapeHtml(r.note)}"</span>` : ''}
             </div>
