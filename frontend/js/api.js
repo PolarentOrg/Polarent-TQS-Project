@@ -108,8 +108,6 @@ const adminApi = {
     getUserById: (id) => fetch(`${API_BASE}/users/${id}`).then(r => r.ok ? r.json() : null),
     activateUser: (id) => fetch(`${API_BASE}/users/${id}/activate`, { method: 'PATCH' }).then(r => r.json()),
     deactivateUser: (id) => fetch(`${API_BASE}/users/${id}/deactivate`, { method: 'PATCH' }).then(r => r.json()),
-    deleteUser: (id) => fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' })
-};
     deleteUser: (id) => fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' }),
     
     // Commission fee
