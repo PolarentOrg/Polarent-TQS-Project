@@ -114,6 +114,17 @@ public class ListingService {
         listingRepository.delete(listing);
     }
 
+    @Transactional
+    public ListingResponseDTO enableListing(Long userId, Long listingId) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new RuntimeException("Listing not found"));
+        if (!listing.getOwnerId().equals(userId)) {
+            throw new RuntimeException("User not authorized to modify this listing");
+        }
+        listing.setEnabled(true);
+        return listingMapper.toDto(listingRepository.save(listing));
+    }
+
     // Search
     public List<ListingResponseDTO> searchListings(String searchTerm) {
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
