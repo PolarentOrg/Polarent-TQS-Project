@@ -30,11 +30,11 @@ public class ListingService {
     public EquipmentDetailsDTO getEquipmentDetails(Long id) {
         Listing listing = listingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Equipment not found"));
-        
+
         if (!listing.getEnabled()) {
             throw new IllegalArgumentException("Equipment not available");
         }
-        
+
         return userRepository.findById(listing.getOwnerId())
                 .map(owner -> {
                     EquipmentDetailsDTO details = new EquipmentDetailsDTO();
