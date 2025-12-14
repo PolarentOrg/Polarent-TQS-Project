@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import java.util.Collections;
 
 @ExtendWith(MockitoExtension.class)
 class ListingControllerTest {
@@ -151,5 +152,46 @@ class ListingControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         verify(listingService).deleteListing(10L, 1L);
+    }
+    @Test
+    void whenAdminRemoveInappropriateListing_thenReturn204() {
+        doNothing().when(listingService).removeInappropriateListing(5L);
+
+        ResponseEntity<Void> response = listingController.removeInappropriateListing(5L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        verify(listingService).removeInappropriateListing(5L);
+    }
+
+    @Test
+    void whenAdminRemoveInappropriateListingNotFound_thenThrowException() {
+        doThrow(new IllegalArgumentException("Listing not found with ID: 999"))
+                .when(listingService).removeInappropriateListing(999L);
+
+        assertThatThrownBy(() -> listingController.removeInappropriateListing(999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Listing not found");
+    }
+
+    @Test
+    void whenAdminGetAllListings_thenReturn200() {
+        List<ListingResponseDTO> allListings = Arrays.asList(camera1Dto, camera2Dto);
+        when(listingService.getAllListingsForAdmin()).thenReturn(allListings);
+
+        ResponseEntity<List<ListingResponseDTO>> response = listingController.getAllListingsForAdmin();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+        verify(listingService).getAllListingsForAdmin();
+    }
+
+    @Test
+    void whenAdminGetAllListingsEmpty_thenReturnEmptyList() {
+        when(listingService.getAllListingsForAdmin()).thenReturn(Collections.emptyList());
+
+        ResponseEntity<List<ListingResponseDTO>> response = listingController.getAllListingsForAdmin();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEmpty();
     }
 }

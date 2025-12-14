@@ -129,4 +129,15 @@ public class ListingController {
     public ResponseEntity<List<String>> getAllDistricts() {
         return ResponseEntity.ok(listingService.getAllDistricts());
     }
+
+    @GetMapping("/admin/all")
+    public ResponseEntity<List<ListingResponseDTO>> getAllListingsForAdmin() {
+        return ResponseEntity.ok(listingService.getAllListingsForAdmin());
+    }
+
+    @DeleteMapping("/admin/{id}")
+    public ResponseEntity<Void> removeInappropriateListing(@PathVariable Long id) {
+        listingService.removeInappropriateListing(id);
+        return ResponseEntity.noContent().build();
+    }
 }

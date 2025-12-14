@@ -215,4 +215,25 @@ public class ListingService {
                 .sorted()
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public void removeInappropriateListing(Long id) {
+        Listing listing = listingRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Listing not found with ID: " + id));
+        System.out.println("[ADMIN ACTION] Removing inappropriate listing:");
+        System.out.println("  - Listing ID: " + listing.getId());
+        System.out.println("  - Title: '" + listing.getTitle() + "'");
+        System.out.println("  - Owner ID: " + listing.getOwnerId());
+        System.out.println("  - Reason: Inappropriate content");
+
+        listingRepository.delete(listing);
+
+        System.out.println("[ADMIN ACTION] Listing successfully removed.");
+    }
+
+    public List<ListingResponseDTO> getAllListingsForAdmin() {
+        return listingRepository.findAll().stream()
+                .map(listingMapper::toDto)
+                .toList();
+    }
 }

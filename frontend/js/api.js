@@ -34,11 +34,13 @@ const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     }).then(r => r.json()),
+
     updateListing: (id, data) => fetch(`${API_BASE}/listings/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     }).then(r => r.json()),
+
     deleteListing: (userId, listingId) => fetch(`${API_BASE}/listings/${userId}/${listingId}`, { method: 'DELETE' }),
 
     // Bookings
@@ -74,6 +76,7 @@ const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     }).then(r => { if (!r.ok) throw r; return r.json(); }),
+
     getRequestsByListing: (listingId) => fetch(`${API_BASE}/requests/listing/${listingId}`).then(r => r.ok ? r.json() : []),
     getMyRequests: (requesterId) => fetch(`${API_BASE}/requests/requester/${requesterId}`).then(r => r.ok ? r.json() : []),
     cancelRequest: (requestId) => fetch(`${API_BASE}/requests/${requestId}`, { method: 'DELETE' }),
@@ -81,13 +84,27 @@ const api = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData)
-    }).then(r => r.json())
+    }).then(r => r.json()),
+
+    // Admin - Listings Management
+    removeInappropriateListing: (id) =>
+        fetch(`${API_BASE}/listings/admin/${id}`, { method: 'DELETE' })
+            .then(r => {
+                if (!r.ok) throw new Error('Failed to remove listing');
+                return r;
+            }),
+
+    getAllListingsForAdmin: () =>
+        fetch(`${API_BASE}/listings/admin/all`)
+            .then(r => {
+                if (!r.ok) throw new Error('Failed to load listings for admin');
+                return r.json();
+            })
 };
 
-// Admin APIs
+// Admin APIs - User Management
 const adminApi = {
     getAllUsers: () => fetch(`${API_BASE}/users`).then(r => r.ok ? r.json() : []),
-
     getUserById: (id) => fetch(`${API_BASE}/users/${id}`).then(r => r.ok ? r.json() : null),
     activateUser: (id) => fetch(`${API_BASE}/users/${id}/activate`, { method: 'PATCH' }).then(r => r.json()),
     deactivateUser: (id) => fetch(`${API_BASE}/users/${id}/deactivate`, { method: 'PATCH' }).then(r => r.json()),
