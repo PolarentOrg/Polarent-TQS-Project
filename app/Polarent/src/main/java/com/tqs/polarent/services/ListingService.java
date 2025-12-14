@@ -6,6 +6,8 @@ import com.tqs.polarent.mapper.ListingMapper;
 import com.tqs.polarent.repository.ListingRepository;
 import com.tqs.polarent.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,10 +18,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ListingService {
-
     private final ListingRepository listingRepository;
     private final UserRepository userRepository;
     private final ListingMapper listingMapper;
+    private static final Logger logger = LoggerFactory.getLogger(ListingService.class);
 
     public ListingResponseDTO getListingById(Long id) {
         Listing listing = listingRepository.findById(id)
@@ -214,5 +216,27 @@ public class ListingService {
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void removeInappropriateListing(Long id) {
+        Listing listing = listingRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Listing not found with ID: " + id));
+        
+        logger.info("[ADMIN ACTION] Removing inappropriate listing:");
+        logger.info("  - Listing ID: {}", listing.getId());
+        logger.info("  - Title: '{}'", listing.getTitle());
+        logger.info("  - Owner ID: {}", listing.getOwnerId());
+        logger.info("  - Reason: Inappropriate content");
+        
+        listingRepository.delete(listing);
+        
+        logger.info("[ADMIN ACTION] Listing successfully removed.");
+    }
+
+    public List<ListingResponseDTO> getAllListingsForAdmin() {
+        return listingRepository.findAll().stream()
+                .map(listingMapper::toDto)
+                .toList();
     }
 }
