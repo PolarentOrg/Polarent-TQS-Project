@@ -2,8 +2,10 @@ package com.tqs.polarent.services;
 
 import com.tqs.polarent.dto.RequestRequestDTO;
 import com.tqs.polarent.dto.RequestResponseDTO;
+import com.tqs.polarent.entity.Listing;
 import com.tqs.polarent.entity.Request;
 import com.tqs.polarent.mapper.RequestMapper;
+import com.tqs.polarent.repository.ListingRepository;
 import com.tqs.polarent.repository.RequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,9 @@ class RequestServiceTest {
 
     @Mock
     private RequestMapper requestMapper;
+
+    @Mock
+    private ListingRepository listingRepository;
 
     @InjectMocks
     private RequestService requestService;
@@ -138,5 +143,90 @@ class RequestServiceTest {
 
         assertThat(result.getListingId()).isEqualTo(10L);
         verify(requestRepository).save(request);
+    }
+
+    @Test
+    void whenCreateBatchRequests_withValidData_thenReturnCreatedRequests() {
+        RequestRequestDTO dto1 = new RequestRequestDTO();
+        dto1.setListingId(10L);
+        dto1.setRequesterId(5L);
+        RequestRequestDTO dto2 = new RequestRequestDTO();
+        dto2.setListingId(11L);
+        dto2.setRequesterId(5L);
+        List<RequestRequestDTO> dtos = List.of(dto1, dto2);
+
+        Listing listing1 = Listing.builder().id(10L).ownerId(6L).build();
+        Listing listing2 = Listing.builder().id(11L).ownerId(7L).build();
+
+        when(listingRepository.findById(10L)).thenReturn(Optional.of(listing1));
+        when(listingRepository.findById(11L)).thenReturn(Optional.of(listing2));
+        when(requestMapper.toEntity(any())).thenReturn(request);
+        when(requestRepository.save(any())).thenReturn(request);
+        when(requestMapper.toDto(any())).thenReturn(requestResponseDTO);
+
+        List<RequestResponseDTO> result = requestService.createBatchRequests(dtos);
+
+        assertThat(result).hasSize(2);
+        verify(requestRepository, times(2)).save(any());
+    }
+
+    @Test
+    void whenCreateBatchRequests_withEmptyList_thenThrowException() {
+        assertThatThrownBy(() -> requestService.createBatchRequests(List.of()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Request list cannot be empty");
+    }
+
+    @Test
+    void whenCreateBatchRequests_withDifferentRequesters_thenThrowException() {
+        RequestRequestDTO dto1 = new RequestRequestDTO();
+        dto1.setRequesterId(5L);
+        RequestRequestDTO dto2 = new RequestRequestDTO();
+        dto2.setRequesterId(6L);
+
+        assertThatThrownBy(() -> requestService.createBatchRequests(List.of(dto1, dto2)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("All requests must have the same requester");
+    }
+
+    @Test
+    void whenCreateBatchRequests_withDuplicateListings_thenThrowException() {
+        RequestRequestDTO dto1 = new RequestRequestDTO();
+        dto1.setListingId(10L);
+        dto1.setRequesterId(5L);
+        RequestRequestDTO dto2 = new RequestRequestDTO();
+        dto2.setListingId(10L);
+        dto2.setRequesterId(5L);
+
+        assertThatThrownBy(() -> requestService.createBatchRequests(List.of(dto1, dto2)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Duplicate listing ID in batch: 10");
+    }
+
+    @Test
+    void whenCreateBatchRequests_withNonExistentListing_thenThrowException() {
+        RequestRequestDTO dto = new RequestRequestDTO();
+        dto.setListingId(99L);
+        dto.setRequesterId(5L);
+
+        when(listingRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> requestService.createBatchRequests(List.of(dto)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Listing not found: 99");
+    }
+
+    @Test
+    void whenCreateBatchRequests_withOwnListing_thenThrowException() {
+        RequestRequestDTO dto = new RequestRequestDTO();
+        dto.setListingId(10L);
+        dto.setRequesterId(5L);
+
+        Listing listing = Listing.builder().id(10L).ownerId(5L).build();
+        when(listingRepository.findById(10L)).thenReturn(Optional.of(listing));
+
+        assertThatThrownBy(() -> requestService.createBatchRequests(List.of(dto)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Cannot request your own listing: 10");
     }
 }

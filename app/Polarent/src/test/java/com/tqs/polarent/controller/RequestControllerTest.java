@@ -141,4 +141,30 @@ class RequestControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody().getId()).isEqualTo(1L);
     }
+
+    @Test
+    void whenCreateBatchRequests_thenReturn201() {
+        RequestRequestDTO dto1 = new RequestRequestDTO();
+        dto1.setListingId(10L);
+        dto1.setRequesterId(5L);
+        RequestRequestDTO dto2 = new RequestRequestDTO();
+        dto2.setListingId(11L);
+        dto2.setRequesterId(5L);
+        List<RequestRequestDTO> dtos = List.of(dto1, dto2);
+
+        RequestResponseDTO response1 = new RequestResponseDTO();
+        response1.setId(1L);
+        RequestResponseDTO response2 = new RequestResponseDTO();
+        response2.setId(2L);
+        List<RequestResponseDTO> responses = List.of(response1, response2);
+
+        when(requestService.createBatchRequests(dtos)).thenReturn(responses);
+
+        ResponseEntity<List<RequestResponseDTO>> response = requestController.createBatchRequests(dtos);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).hasSize(2);
+        assertThat(response.getBody().get(0).getId()).isEqualTo(1L);
+        assertThat(response.getBody().get(1).getId()).isEqualTo(2L);
+    }
 }
