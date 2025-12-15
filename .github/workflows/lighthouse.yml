@@ -1,5 +1,4 @@
 name: Lighthouse Performance Tests
-
 on:
   push:
     branches: [ main, dev ]
@@ -27,19 +26,24 @@ jobs:
             PORT=8081
           fi
           
+          echo "PORT=$PORT" >> $GITHUB_ENV
+          
           echo "Waiting for frontend on port $PORT..."
           for i in {1..30}; do
             if curl -s http://localhost:$PORT > /dev/null; then
               echo "Frontend is ready!"
-              break
+              exit 0
             fi
             echo "Attempt $i/30 failed, waiting..."
             sleep 5
           done
           
+          echo "Frontend failed to start!"
+          exit 1
+          
       - name: Run Lighthouse
         uses: treosh/lighthouse-ci-action@v10
         with:
           urls: |
-            http://localhost:${{ (github.ref == 'refs/heads/main' || github.base_ref == 'main') && '8080' || '8081' }}
+            http://localhost:${{ env.PORT }}
           temporaryPublicStorage: true
