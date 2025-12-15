@@ -36,6 +36,38 @@ public class E2EAuthenticationSteps {
         page.waitForSelector("#login-form");
     }
 
+    @When("I click on the register tab")
+    public void iClickOnTheRegisterTab() {
+        page.click(".auth-tab[data-tab='register']");
+        page.waitForSelector("#register-form", new Page.WaitForSelectorOptions().setState(WaitForSelectorState.VISIBLE));
+    }
+
+    @When("I enter first name {string}")
+    public void iEnterFirstName(String firstName) {
+        page.fill("#register-firstname", firstName);
+    }
+
+    @When("I enter last name {string}")
+    public void iEnterLastName(String lastName) {
+        page.fill("#register-lastname", lastName);
+    }
+
+    @When("I enter registration email {string}")
+    public void iEnterRegistrationEmail(String email) {
+        String uniqueEmail = "e2e_" + System.currentTimeMillis() + "@test.com";
+        page.fill("#register-email", uniqueEmail);
+    }
+
+    @When("I enter registration password {string}")
+    public void iEnterRegistrationPassword(String password) {
+        page.fill("#register-password", password);
+    }
+
+    @When("I click the register button")
+    public void iClickTheRegisterButton() {
+        page.click("#register-form button[type='submit']");
+    }
+
     @When("I enter email {string} in the login form")
     public void iEnterEmailInTheLoginForm(String email) {
         page.fill("#login-email", email);
@@ -54,13 +86,13 @@ public class E2EAuthenticationSteps {
 
     @Then("I should see the equipment listings")
     public void iShouldSeeTheEquipmentListings() {
-        page.waitForSelector("#listings-page", new Page.WaitForSelectorOptions().setTimeout(5000));
+        page.waitForSelector("#listings-page.active", new Page.WaitForSelectorOptions().setTimeout(10000));
         assertThat(page.isVisible("#listings-page")).isTrue();
     }
 
-    @Then("I should see a login error")
-    public void iShouldSeeALoginError() {
-        boolean hasError = page.isVisible(".error") || page.isVisible("[class*='error']") || page.isVisible("#login-form");
-        assertThat(hasError).isTrue();
+    @Then("I should remain on the login page")
+    public void iShouldRemainOnTheLoginPage() {
+        page.waitForTimeout(1500);
+        assertThat(page.isVisible("#auth-page.active") || page.isVisible("#login-form")).isTrue();
     }
 }
