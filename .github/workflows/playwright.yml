@@ -7,7 +7,8 @@ on:
     branches: [dev, main]
 
 jobs:
-  playwright:
+  playwright-dev:
+    if: github.ref == 'refs/heads/dev' || github.base_ref == 'dev'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,27 +19,17 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Start application
+      - name: Start application (dev)
         run: docker compose up -d --build
 
       - name: Wait for services
         run: |
-          echo "Waiting for frontend..."
           for i in {1..60}; do
-            if curl -sf http://localhost:8081 > /dev/null 2>&1; then
-              echo "Frontend ready!"
-              break
-            fi
-            echo "Attempt $i/60..."
+            curl -sf http://localhost:8081 > /dev/null 2>&1 && break
             sleep 3
           done
-          echo "Waiting for backend..."
           for i in {1..60}; do
-            if curl -sf http://localhost:8080/actuator/health > /dev/null 2>&1; then
-              echo "Backend ready!"
-              break
-            fi
-            echo "Attempt $i/60..."
+            curl -sf http://localhost:8080/actuator/health > /dev/null 2>&1 && break
             sleep 3
           done
 
@@ -50,9 +41,9 @@ jobs:
 
       - name: Run Playwright tests
         working-directory: ./app/Polarent
+        run: mvn test -Dtest=AuthenticationPlaywrightTest -De2e.baseUrl=http://localhost:8081
         env:
           CI: false
-        run: mvn test -Dtest=AuthenticationPlaywrightTest
 
       - name: Show logs on failure
         if: failure()
@@ -61,3 +52,45 @@ jobs:
       - name: Stop application
         if: always()
         run: docker compose down -v
+
+  playwright-prod:
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Start application (prod)
+        run: docker compose -f docker-compose.prod.yml up -d --build
+
+      - name: Wait for services
+        run: |
+          for i in {1..60}; do
+            curl -sf http://localhost:8080 > /dev/null 2>&1 && break
+            sleep 3
+          done
+
+      - name: Install Playwright browsers
+        working-directory: ./app/Polarent
+        run: |
+          mvn dependency:copy-dependencies -DincludeScope=test -DoutputDirectory=target/dependency
+          java -cp "target/dependency/*" com.microsoft.playwright.CLI install chromium --with-deps
+
+      - name: Run Playwright tests
+        working-directory: ./app/Polarent
+        run: mvn test -Dtest=AuthenticationPlaywrightTest -De2e.baseUrl=http://localhost:8080
+        env:
+          CI: false
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.prod.yml logs
+
+      - name: Stop application
+        if: always()
+        run: docker compose -f docker-compose.prod.yml down -v

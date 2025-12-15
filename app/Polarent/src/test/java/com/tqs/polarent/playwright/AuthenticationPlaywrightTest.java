@@ -15,7 +15,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 @DisabledIfEnvironmentVariable(named = "CI", matches = "true")
 public class AuthenticationPlaywrightTest {
 
-    private static final String BASE_URL = "http://localhost:8081";
+    private static final String BASE_URL = System.getProperty("e2e.baseUrl", "http://localhost:8081");
     private static final String TEST_EMAIL = "playwright_" + System.currentTimeMillis() + "@test.com";
     private static final String TEST_PASSWORD = "password123";
 
