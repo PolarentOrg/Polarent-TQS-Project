@@ -27,7 +27,9 @@ jobs:
 
       - name: Install Playwright browsers
         working-directory: ./app/Polarent
-        run: mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install chromium --with-deps"
+        run: |
+          mvn dependency:copy-dependencies -DincludeScope=test -DoutputDirectory=target/dependency
+          java -cp "target/dependency/*" com.microsoft.playwright.CLI install chromium --with-deps
 
       - name: Run E2E Cucumber tests
         working-directory: ./app/Polarent
