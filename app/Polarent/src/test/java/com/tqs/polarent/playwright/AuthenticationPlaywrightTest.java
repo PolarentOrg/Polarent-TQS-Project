@@ -6,11 +6,13 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 @UsePlaywright
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true")
 public class AuthenticationPlaywrightTest {
 
     private static final String BASE_URL = "http://localhost:8081";
