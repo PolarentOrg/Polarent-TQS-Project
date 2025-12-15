@@ -6,12 +6,12 @@ let adminListings = [];
 // Utility functions
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString).toLocaleDateString('en-GB');
 }
 
 function dayOfYearToDate(dayOfYear, year = new Date().getFullYear()) {
     const date = new Date(year, 0, dayOfYear);
-    return date.toLocaleDateString();
+    return date.toLocaleDateString('en-GB');
 }
 
 // DOM Elements
@@ -259,7 +259,7 @@ function renderDashboardBookings(bookings) {
             </div>
             <div class="list-item-details">
                 <span>€${b.price.toFixed(2)}</span>
-                <span>${new Date(b.createdAt).toLocaleDateString()}</span>
+                <span>${new Date(b.createdAt).toLocaleDateString('en-GB')}</span>
             </div>
         </div>
     `).join('');
@@ -331,7 +331,7 @@ async function showListingDetails(listingId) {
                 <p><strong>Owner:</strong> ${escapeHtml(details.ownerName)}</p>
                 <p><strong>Contact:</strong> ${escapeHtml(details.ownerEmail)}</p>
                 <p><strong>Status:</strong> <span class="badge ${details.available ? 'badge-success' : 'badge-warning'}">${details.available ? 'Available' : 'Unavailable'}</span></p>
-                <p><strong>Listed:</strong> ${new Date(details.createdAt).toLocaleDateString()}</p>
+                <p><strong>Listed:</strong> ${new Date(details.createdAt).toLocaleDateString('en-GB')}</p>
             </div>
             <div class="modal-actions">
                 ${details.available ? `<button class="btn btn-primary" onclick="closeModal(); showRentModal(${details.id})">Rent This Item</button>` : ''}
@@ -949,7 +949,7 @@ function renderAdminListings(listings) {
                         ${isEnabled ? 'Enabled' : 'Disabled'}
                     </span>
                     <span>Owner ID: ${listing.ownerId}</span>
-                    <span>Created: ${new Date(listing.createdAt).toLocaleDateString()}</span>
+                    <span>Created: ${new Date(listing.createdAt).toLocaleDateString('en-GB')}</span>
                 </div>
 
                 <div class="listing-content">
@@ -962,7 +962,7 @@ function renderAdminListings(listings) {
                 <div class="listing-owner">
                     <strong>Listing Owner:</strong> User #${listing.ownerId}
                     <br>
-                    <small>Listed on: ${new Date(listing.createdAt).toLocaleString()}</small>
+                    <small>Listed on: ${new Date(listing.createdAt).toLocaleString('en-GB')}</small>
                 </div>
 
                 <div class="admin-listing-actions">
@@ -1023,8 +1023,8 @@ async function viewAdminListingDetails(listingId) {
                 </p>
                 <p><strong>Location:</strong> ${escapeHtml(listing.city || 'N/A')}, ${escapeHtml(listing.district || 'N/A')}</p>
                 <p><strong>Owner ID:</strong> ${listing.ownerId}</p>
-                <p><strong>Created:</strong> ${new Date(listing.createdAt).toLocaleString()}</p>
-                <p><strong>Last Updated:</strong> ${new Date(listing.updatedAt).toLocaleString()}</p>
+                <p><strong>Created:</strong> ${new Date(listing.createdAt).toLocaleString('en-GB')}</p>
+                <p><strong>Last Updated:</strong> ${new Date(listing.updatedAt).toLocaleString('en-GB')}</p>
             </div>
 
             <div class="warning-box">

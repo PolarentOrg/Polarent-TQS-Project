@@ -97,13 +97,13 @@ class ListingServiceTest {
 
     @Test
     void whenGetEnabledListings_thenReturnList() {
-        when(listingRepository.findByEnabledTrue()).thenReturn(List.of(listing));
+        when(listingRepository.findAvailableListings()).thenReturn(List.of(listing));
         when(listingMapper.toDto(listing)).thenReturn(responseDTO);
 
         List<ListingResponseDTO> result = listingService.getEnabledListings();
 
         assertThat(result).hasSize(1);
-        verify(listingRepository).findByEnabledTrue();
+        verify(listingRepository).findAvailableListings();
     }
 
     @Test
@@ -182,42 +182,42 @@ class ListingServiceTest {
     @Test
     void whenSearchListingsWithNullTerm_thenReturnAllEnabled() {
         List<Listing> allEnabled = Arrays.asList(camera1, camera2);
-        when(listingRepository.findByEnabledTrue()).thenReturn(allEnabled);
+        when(listingRepository.findAvailableListings()).thenReturn(allEnabled);
         when(listingMapper.toDto(camera1)).thenReturn(camera1Dto);
         when(listingMapper.toDto(camera2)).thenReturn(camera2Dto);
 
         List<ListingResponseDTO> result = listingService.searchListings(null);
 
         assertThat(result).hasSize(2);
-        verify(listingRepository, times(1)).findByEnabledTrue();
+        verify(listingRepository, times(1)).findAvailableListings();
         verify(listingRepository, never()).searchByTerm(any());
     }
 
     @Test
     void whenSearchListingsWithEmptyTerm_thenReturnAllEnabled() {
         List<Listing> allEnabled = Arrays.asList(camera1, camera2);
-        when(listingRepository.findByEnabledTrue()).thenReturn(allEnabled);
+        when(listingRepository.findAvailableListings()).thenReturn(allEnabled);
         when(listingMapper.toDto(camera1)).thenReturn(camera1Dto);
         when(listingMapper.toDto(camera2)).thenReturn(camera2Dto);
 
         List<ListingResponseDTO> result = listingService.searchListings("");
 
         assertThat(result).hasSize(2);
-        verify(listingRepository, times(1)).findByEnabledTrue();
+        verify(listingRepository, times(1)).findAvailableListings();
         verify(listingRepository, never()).searchByTerm(any());
     }
 
     @Test
     void whenSearchListingsWithWhitespaceTerm_thenReturnAllEnabled() {
         List<Listing> allEnabled = Arrays.asList(camera1, camera2);
-        when(listingRepository.findByEnabledTrue()).thenReturn(allEnabled);
+        when(listingRepository.findAvailableListings()).thenReturn(allEnabled);
         when(listingMapper.toDto(camera1)).thenReturn(camera1Dto);
         when(listingMapper.toDto(camera2)).thenReturn(camera2Dto);
 
         List<ListingResponseDTO> result = listingService.searchListings("   ");
 
         assertThat(result).hasSize(2);
-        verify(listingRepository, times(1)).findByEnabledTrue();
+        verify(listingRepository, times(1)).findAvailableListings();
         verify(listingRepository, never()).searchByTerm(any());
     }
 

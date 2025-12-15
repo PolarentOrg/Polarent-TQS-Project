@@ -39,4 +39,18 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     Integer countRentalsThisMonth(
             @Param("renterId") Long renterId,
             @Param("startDate") LocalDateTime startDate);
+
+    // Check for conflicting bookings for a listing in a date range
+    @Query("SELECT COUNT(b) FROM Booking b JOIN Request r ON b.requestId = r.id " +
+            "WHERE r.listingId = :listingId AND (b.status = com.tqs.polarent.enums.Status.ACCEPTED OR b.status = com.tqs.polarent.enums.Status.PAID) " +
+            "AND NOT ((:endDate <= r.initialDate) OR (:startDate >= r.initialDate + r.duration))")
+    Long countConflictingBookings(
+            @Param("listingId") Long listingId,
+            @Param("startDate") Integer startDate,
+            @Param("endDate") Integer endDate);
+
+    // Find accepted/paid bookings for a listing
+    @Query("SELECT b FROM Booking b JOIN Request r ON b.requestId = r.id " +
+            "WHERE r.listingId = :listingId AND (b.status = com.tqs.polarent.enums.Status.ACCEPTED OR b.status = com.tqs.polarent.enums.Status.PAID)")
+    List<Booking> findActiveBookingsByListingId(@Param("listingId") Long listingId);
 }
