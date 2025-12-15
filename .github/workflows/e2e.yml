@@ -57,7 +57,7 @@ jobs:
       - name: Run E2E Cucumber tests
         working-directory: ./app/Polarent
         run: |
-          mvn test -Dsurefire.includesFile=none -Dtest=CucumberTest -Dcucumber.filter.tags="@e2e" -De2e.baseUrl=http://localhost:8081 -DfailIfNoTests=false
+          mvn test -Dtest=E2ECucumberTest -De2e.baseUrl=http://localhost:8081
 
       - name: Show logs on failure
         if: failure()
@@ -108,7 +108,7 @@ jobs:
       - name: Run E2E Cucumber tests
         working-directory: ./app/Polarent
         run: |
-          mvn test -Dsurefire.includesFile=none -Dtest=CucumberTest -Dcucumber.filter.tags="@e2e" -De2e.baseUrl=http://localhost:8080 -DfailIfNoTests=false
+          mvn test -Dtest=E2ECucumberTest -De2e.baseUrl=http://localhost:8080
 
       - name: Show logs on failure
         if: failure()
