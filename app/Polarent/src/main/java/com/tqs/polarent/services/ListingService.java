@@ -62,7 +62,7 @@ public class ListingService {
     }
 
     public List<ListingResponseDTO> getEnabledListings() {
-        return listingRepository.findByEnabledTrue().stream()
+        return listingRepository.findAvailableListings().stream()
                 .map(listingMapper::toDto)
                 .toList();
     }
@@ -149,7 +149,7 @@ public class ListingService {
         if (maxPrice == null || maxPrice <= 0) {
             return getEnabledListings();
         }
-        return listingRepository.findByDailyRateLessThanEqualAndEnabledTrue(maxPrice).stream()
+        return listingRepository.findAvailableByMaxPrice(maxPrice).stream()
                 .map(listingMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -158,7 +158,7 @@ public class ListingService {
         if (minPrice == null || minPrice < 0) {
             return getEnabledListings();
         }
-        return listingRepository.findByDailyRateGreaterThanEqualAndEnabledTrue(minPrice).stream()
+        return listingRepository.findAvailableByMinPrice(minPrice).stream()
                 .map(listingMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -167,7 +167,7 @@ public class ListingService {
         if (city == null || city.trim().isEmpty()) {
             return getEnabledListings();
         }
-        return listingRepository.findByCityAndEnabledTrue(city.trim()).stream()
+        return listingRepository.findAvailableByCity(city.trim()).stream()
                 .map(listingMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -185,7 +185,7 @@ public class ListingService {
         if (district == null || district.trim().isEmpty()) {
             return getEnabledListings();
         }
-        return listingRepository.findByDistrictAndEnabledTrue(district.trim()).stream()
+        return listingRepository.findAvailableByDistrict(district.trim()).stream()
                 .map(listingMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -212,7 +212,7 @@ public class ListingService {
     }
 
     public List<String> getAllCities() {
-        return listingRepository.findByEnabledTrue().stream()
+        return listingRepository.findAvailableListings().stream()
                 .map(Listing::getCity)
                 .filter(city -> city != null && !city.trim().isEmpty())
                 .distinct()
@@ -221,7 +221,7 @@ public class ListingService {
     }
 
     public List<String> getAllDistricts() {
-        return listingRepository.findByEnabledTrue().stream()
+        return listingRepository.findAvailableListings().stream()
                 .map(Listing::getDistrict)
                 .filter(district -> district != null && !district.trim().isEmpty())
                 .distinct()

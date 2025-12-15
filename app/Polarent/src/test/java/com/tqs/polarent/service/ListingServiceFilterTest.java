@@ -174,7 +174,7 @@ class ListingServiceFilterTest {
     void whenFilterByMaxPrice_thenReturnListingsBelowOrEqual() {
         List<Listing> filteredListings = Arrays.asList(cheapLisbonCamera, mediumPortoCamera,
                 midRangeCoimbraTripod);
-        when(listingRepository.findByDailyRateLessThanEqualAndEnabledTrue(60.0)).thenReturn(filteredListings);
+        when(listingRepository.findAvailableByMaxPrice(60.0)).thenReturn(filteredListings);
         when(listingMapper.toDto(cheapLisbonCamera)).thenReturn(cheapLisbonCameraDto);
         when(listingMapper.toDto(mediumPortoCamera)).thenReturn(mediumPortoCameraDto);
         when(listingMapper.toDto(midRangeCoimbraTripod)).thenReturn(midRangeCoimbraTripodDto);
@@ -188,7 +188,7 @@ class ListingServiceFilterTest {
     @Test
     void whenFilterByMinPrice_thenReturnListingsAboveOrEqual() {
         List<Listing> filteredListings = Arrays.asList(mediumPortoCamera, expensiveLisbonLens);
-        when(listingRepository.findByDailyRateGreaterThanEqualAndEnabledTrue(50.0)).thenReturn(filteredListings);
+        when(listingRepository.findAvailableByMinPrice(50.0)).thenReturn(filteredListings);
         when(listingMapper.toDto(mediumPortoCamera)).thenReturn(mediumPortoCameraDto);
         when(listingMapper.toDto(expensiveLisbonLens)).thenReturn(expensiveLisbonLensDto);
         List<ListingResponseDTO> result = listingService.filterByMinPrice(50.0);
@@ -199,7 +199,7 @@ class ListingServiceFilterTest {
     @Test
     void whenFilterByCity_thenReturnListingsFromCity() {
         List<Listing> lisbonListings = Arrays.asList(cheapLisbonCamera, expensiveLisbonLens);
-        when(listingRepository.findByCityAndEnabledTrue("Lisbon")).thenReturn(lisbonListings);
+        when(listingRepository.findAvailableByCity("Lisbon")).thenReturn(lisbonListings);
         when(listingMapper.toDto(cheapLisbonCamera)).thenReturn(cheapLisbonCameraDto);
         when(listingMapper.toDto(expensiveLisbonLens)).thenReturn(expensiveLisbonLensDto);
 
@@ -222,7 +222,7 @@ class ListingServiceFilterTest {
     @Test
     void whenFilterByDistrict_thenReturnListingsFromDistrict() {
         List<Listing> centroListings = Arrays.asList(cheapLisbonCamera, mediumPortoCamera);
-        when(listingRepository.findByDistrictAndEnabledTrue("Centro")).thenReturn(centroListings);
+        when(listingRepository.findAvailableByDistrict("Centro")).thenReturn(centroListings);
         when(listingMapper.toDto(cheapLisbonCamera)).thenReturn(cheapLisbonCameraDto);
         when(listingMapper.toDto(mediumPortoCamera)).thenReturn(mediumPortoCameraDto);
 
@@ -261,7 +261,7 @@ class ListingServiceFilterTest {
     void whenGetAllCities_thenReturnUniqueSortedCities() {
         List<Listing> allListings = Arrays.asList(cheapLisbonCamera, mediumPortoCamera,
                 expensiveLisbonLens, midRangeCoimbraTripod);
-        when(listingRepository.findByEnabledTrue()).thenReturn(allListings);
+        when(listingRepository.findAvailableListings()).thenReturn(allListings);
         List<String> result = listingService.getAllCities();
         assertThat(result).hasSize(3);
         assertThat(result).containsExactly("Coimbra", "Lisbon", "Porto");
@@ -271,7 +271,7 @@ class ListingServiceFilterTest {
     void whenGetAllDistricts_thenReturnUniqueSortedDistricts() {
         List<Listing> allListings = Arrays.asList(cheapLisbonCamera, mediumPortoCamera,
                 expensiveLisbonLens, midRangeCoimbraTripod);
-        when(listingRepository.findByEnabledTrue()).thenReturn(allListings);
+        when(listingRepository.findAvailableListings()).thenReturn(allListings);
         List<String> result = listingService.getAllDistricts();
         assertThat(result).hasSize(3);
         assertThat(result).containsExactly("Alvalade", "Centro", "Coimbra Centro");
@@ -281,7 +281,7 @@ class ListingServiceFilterTest {
     void whenFilterByCityWithNull_thenReturnAllEnabled() {
         List<Listing> allListings = Arrays.asList(cheapLisbonCamera, mediumPortoCamera,
                 expensiveLisbonLens, midRangeCoimbraTripod);
-        when(listingRepository.findByEnabledTrue()).thenReturn(allListings);
+        when(listingRepository.findAvailableListings()).thenReturn(allListings);
         when(listingMapper.toDto(cheapLisbonCamera)).thenReturn(cheapLisbonCameraDto);
         when(listingMapper.toDto(mediumPortoCamera)).thenReturn(mediumPortoCameraDto);
         when(listingMapper.toDto(expensiveLisbonLens)).thenReturn(expensiveLisbonLensDto);
@@ -301,7 +301,7 @@ class ListingServiceFilterTest {
     void whenFilterByMaxPriceWithNull_thenReturnAllEnabled() {
         List<Listing> allListings = Arrays.asList(cheapLisbonCamera, mediumPortoCamera,
                 expensiveLisbonLens, midRangeCoimbraTripod);
-        when(listingRepository.findByEnabledTrue()).thenReturn(allListings);
+        when(listingRepository.findAvailableListings()).thenReturn(allListings);
         when(listingMapper.toDto(cheapLisbonCamera)).thenReturn(cheapLisbonCameraDto);
         when(listingMapper.toDto(mediumPortoCamera)).thenReturn(mediumPortoCameraDto);
         when(listingMapper.toDto(expensiveLisbonLens)).thenReturn(expensiveLisbonLensDto);
@@ -314,7 +314,7 @@ class ListingServiceFilterTest {
     void whenFilterByEmptyString_thenReturnAllEnabled() {
         List<Listing> allListings = Arrays.asList(cheapLisbonCamera, mediumPortoCamera,
                 expensiveLisbonLens, midRangeCoimbraTripod);
-        when(listingRepository.findByEnabledTrue()).thenReturn(allListings);
+        when(listingRepository.findAvailableListings()).thenReturn(allListings);
         when(listingMapper.toDto(cheapLisbonCamera)).thenReturn(cheapLisbonCameraDto);
         when(listingMapper.toDto(mediumPortoCamera)).thenReturn(mediumPortoCameraDto);
         when(listingMapper.toDto(expensiveLisbonLens)).thenReturn(expensiveLisbonLensDto);
@@ -327,7 +327,7 @@ class ListingServiceFilterTest {
     void whenFilterByWhitespace_thenReturnAllEnabled() {
         List<Listing> allListings = Arrays.asList(cheapLisbonCamera, mediumPortoCamera,
                 expensiveLisbonLens, midRangeCoimbraTripod);
-        when(listingRepository.findByEnabledTrue()).thenReturn(allListings);
+        when(listingRepository.findAvailableListings()).thenReturn(allListings);
         when(listingMapper.toDto(cheapLisbonCamera)).thenReturn(cheapLisbonCameraDto);
         when(listingMapper.toDto(mediumPortoCamera)).thenReturn(mediumPortoCameraDto);
         when(listingMapper.toDto(expensiveLisbonLens)).thenReturn(expensiveLisbonLensDto);
@@ -340,7 +340,7 @@ class ListingServiceFilterTest {
     void whenFilterByMaxPriceWithZero_thenReturnAllEnabled() {
         List<Listing> allListings = Arrays.asList(cheapLisbonCamera, mediumPortoCamera,
                 expensiveLisbonLens, midRangeCoimbraTripod);
-        when(listingRepository.findByEnabledTrue()).thenReturn(allListings);
+        when(listingRepository.findAvailableListings()).thenReturn(allListings);
         when(listingMapper.toDto(cheapLisbonCamera)).thenReturn(cheapLisbonCameraDto);
         when(listingMapper.toDto(mediumPortoCamera)).thenReturn(mediumPortoCameraDto);
         when(listingMapper.toDto(expensiveLisbonLens)).thenReturn(expensiveLisbonLensDto);
@@ -353,7 +353,7 @@ class ListingServiceFilterTest {
     void whenFilterByMinPriceWithNegative_thenReturnAllEnabled() {
         List<Listing> allListings = Arrays.asList(cheapLisbonCamera, mediumPortoCamera,
                 expensiveLisbonLens, midRangeCoimbraTripod);
-        when(listingRepository.findByEnabledTrue()).thenReturn(allListings);
+        when(listingRepository.findAvailableListings()).thenReturn(allListings);
         when(listingMapper.toDto(cheapLisbonCamera)).thenReturn(cheapLisbonCameraDto);
         when(listingMapper.toDto(mediumPortoCamera)).thenReturn(mediumPortoCameraDto);
         when(listingMapper.toDto(expensiveLisbonLens)).thenReturn(expensiveLisbonLensDto);

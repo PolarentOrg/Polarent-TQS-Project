@@ -55,6 +55,30 @@ public class BookingService {
     public BookingResponseDTO updateBookingStatus(Long id, Status status) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+        
+        // Check for conflicts when accepting a booking
+        if (status == Status.ACCEPTED) {
+            Request request = requestRepository.findById(booking.getRequestId())
+                    .orElseThrow(() -> new IllegalArgumentException("Request not found"));
+            
+            // Check if rental start date is in the past
+            if (request.getInitialDate() != null && request.getInitialDate() < 0) {
+                throw new IllegalStateException("Cannot accept booking: rental date is in the past");
+            }
+            
+            if (request.getInitialDate() != null && request.getDuration() != null) {
+                Integer endDate = request.getInitialDate() + request.getDuration();
+                Long conflicts = bookingRepository.countConflictingBookings(
+                        request.getListingId(), 
+                        request.getInitialDate(), 
+                        endDate);
+                
+                if (conflicts > 0) {
+                    throw new IllegalStateException("Cannot accept booking: equipment already booked for this period");
+                }
+            }
+        }
+        
         booking.setStatus(status);
         return bookingMapper.toDto(bookingRepository.save(booking));
     }

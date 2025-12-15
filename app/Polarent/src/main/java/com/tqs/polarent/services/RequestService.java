@@ -46,6 +46,11 @@ public class RequestService {
 
     @Transactional
     public RequestResponseDTO createRequest(RequestRequestDTO dto) {
+        // Validate rental date is not in the past
+        if (dto.getInitialDate() != null && dto.getInitialDate() < 0) {
+            throw new IllegalArgumentException("Cannot create request: rental date cannot be in the past");
+        }
+        
         Request request = requestMapper.toEntity(dto);
         return requestMapper.toDto(requestRepository.save(request));
     }
@@ -71,6 +76,11 @@ public class RequestService {
 
         // Second pass: validate listings exist and ownership
         for (RequestRequestDTO dto : dtos) {
+            // Validate rental date is not in the past
+            if (dto.getInitialDate() != null && dto.getInitialDate() < 0) {
+                throw new IllegalArgumentException("Cannot create request: rental date cannot be in the past for listing " + dto.getListingId());
+            }
+            
             Listing listing = listingRepository.findById(dto.getListingId())
                     .orElseThrow(() -> new IllegalArgumentException("Listing not found: " + dto.getListingId()));
             if (listing.getOwnerId().equals(requesterId)) {
