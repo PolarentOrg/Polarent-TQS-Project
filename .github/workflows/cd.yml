@@ -17,5 +17,7 @@ jobs:
           git fetch origin
           git checkout dev
           git pull origin dev
-          docker compose down -v
+          docker compose down -v --remove-orphans || true
+          docker stop $(docker ps -q) 2>/dev/null || true
+          sleep 2
           docker compose up -d --build
