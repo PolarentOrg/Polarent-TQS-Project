@@ -1,0 +1,45 @@
+name: Lighthouse Performance Tests
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+      
+      - name: Start application
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ] || [ "${{ github.base_ref }}" == "main" ]; then
+            docker-compose -f docker-compose.prod.yml up -d
+            PORT=8080
+          else
+            docker-compose up -d
+            PORT=8081
+          fi
+          
+          echo "Waiting for frontend on port $PORT..."
+          for i in {1..30}; do
+            if curl -s http://localhost:$PORT > /dev/null; then
+              echo "Frontend is ready!"
+              break
+            fi
+            echo "Attempt $i/30 failed, waiting..."
+            sleep 5
+          done
+          
+      - name: Run Lighthouse
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            http://localhost:${{ (github.ref == 'refs/heads/main' || github.base_ref == 'main') && '8080' || '8081' }}
+          temporaryPublicStorage: true
