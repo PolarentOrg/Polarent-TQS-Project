@@ -2,13 +2,15 @@ package com.tqs.polarent.playwright;
 
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.junit.UsePlaywright;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 @UsePlaywright
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Disabled("Requires running application on localhost:8081")
 public class AuthenticationPlaywrightTest {
 
     private static final String BASE_URL = "http://localhost:8081";
