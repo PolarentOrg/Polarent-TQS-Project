@@ -5,4 +5,3 @@ Our team:
 - Tiago Coelho - QA Engineer
 - Solomiia Koba - DevOps master
 
-hmmmmmmmmmmmmm
