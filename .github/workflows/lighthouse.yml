@@ -42,5 +42,4 @@ jobs:
         with:
           urls: |
             http://localhost:${{ (github.ref == 'refs/heads/main' || github.base_ref == 'main') && '8080' || '8081' }}
-          uploadArtifacts: true
           temporaryPublicStorage: true
