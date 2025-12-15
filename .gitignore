@@ -160,3 +160,7 @@ buildNumber.properties
 .classpath
 
 # End of https://www.toptal.com/developers/gitignore/api/maven,java,intellij
+# Environment Variables
+.env
+.env.local
+.env.production

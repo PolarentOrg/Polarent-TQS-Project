@@ -16,6 +16,8 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       DB_USER: polarent
       DB_PASSWORD: polarent
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET}
     depends_on:
       - db
     networks:

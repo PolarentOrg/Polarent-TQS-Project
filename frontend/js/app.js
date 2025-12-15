@@ -749,7 +749,7 @@ function renderRentalItem(rental) {
             </div>
             <div class="list-item-actions">
                 ${rental.status === 'PENDING' ?
-                    `<button class="btn btn-success btn-sm" onclick="payBooking(${rental.bookingId})">Pay Now</button>` : ''}
+                    `<button class="btn btn-success btn-sm" onclick="showPayPalModal(${rental.bookingId}, ${rental.price})">Pay Now</button>` : ''}
                 <button class="btn btn-info btn-sm" onclick="showRentalDetails(${rental.bookingId})">Details</button>
                 ${rental.status === 'PAID' || rental.status === 'PENDING' ?
                     `<button class="btn btn-danger btn-sm" onclick="cancelBooking(${rental.bookingId})">Cancel</button>` : ''}
@@ -1072,3 +1072,25 @@ async function removeInappropriateListing(listingId, listingTitle) {
     }
 }
 
+// PayPal Payment Functions
+function showPayPalModal(bookingId, amount) {
+    showModal(`
+        <h3>Complete Payment</h3>
+        <p>Amount: €${amount.toFixed(2)}</p>
+        <div id="paypal-button-container"></div>
+    `);
+    
+    // Initialize PayPal button
+    setTimeout(() => initPayPalButton(amount, bookingId), 100);
+}
+
+async function onPaymentSuccess(bookingId) {
+    try {
+        await api.updateBookingStatus(bookingId, 'PAID');
+        showToast('Payment successful!');
+        closeModal();
+        loadRenterDashboard();
+    } catch (error) {
+        showToast('Payment completed but booking update failed', 'error');
+    }
+}
