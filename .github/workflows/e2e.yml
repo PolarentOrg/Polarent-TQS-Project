@@ -1,0 +1,48 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start application
+        run: docker compose up -d --build
+        
+      - name: Wait for services
+        run: |
+          timeout 120 bash -c 'until curl -s http://localhost:8081 > /dev/null; do sleep 2; done'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./e2e
+        run: |
+          npm ci
+          npx playwright install chromium --with-deps
+
+      - name: Run Cucumber tests
+        working-directory: ./e2e
+        run: npm test
+        env:
+          BASE_URL: http://localhost:8081
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-report
+          path: e2e/reports/
+
+      - name: Stop application
+        if: always()
+        run: docker compose down -v
