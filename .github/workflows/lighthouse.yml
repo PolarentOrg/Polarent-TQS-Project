@@ -20,7 +20,7 @@ jobs:
         run: |
           if [ "${{ github.ref }}" == "refs/heads/main" ] || [ "${{ github.base_ref }}" == "main" ]; then
             docker-compose -f docker-compose.prod.yml up -d
-            PORT=8080
+            PORT=80
           else
             docker-compose up -d
             PORT=8081
