@@ -168,6 +168,17 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>9.0.9</version>
+                <configuration>
+                    <nvdApiKey>${nvdApiKey}</nvdApiKey>
+                    <nvdApiDelay>6000</nvdApiDelay>
+                    <failBuildOnCVSS>9</failBuildOnCVSS>
+                    <failOnError>false</failOnError>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
