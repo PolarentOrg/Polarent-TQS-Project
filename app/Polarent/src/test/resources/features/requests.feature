@@ -1,24 +1,26 @@
-Feature: Request Management
-  As a user
-  I want to make requests for photography equipment
-  So that I can rent items for my projects
+@REQ_TQS-14
+Feature: Make Requests
+  As a renter
+  I want to make requests
+  So that I can book equipment
 
-  Scenario: Create a rental request
-    Given there is an available listing for a "Canon EOS R5"
-    When I create a request for 3 days
-    Then the request should be created successfully
+  @TEST_TQS-81 @REQ_TQS-14 @TESTSET_TQS-70
+  Scenario: Successful single request
+    Given the system is available
+    And the listing is enabled
+    When I make a single request
+    Then I should receive a successful response
 
-  Scenario: View requests for my listing
-    Given I own a listing with pending requests
-    When I view requests for my listing
-    Then I should see all pending requests
+  @TEST_TQS-82 @REQ_TQS-14 @TESTSET_TQS-70
+  Scenario: Successful multiple requests
+    Given the system is available
+    And the listings are available
+    When I make a request to each listing
+    Then I should receive a successful response
 
-  Scenario: View my requests as a renter
-    Given I have made requests for equipment
-    When I view my requests
-    Then I should see all my requests
-
-  Scenario: Delete a request
-    Given I have a pending request
-    When I delete my request
-    Then the request should be removed
+  @TEST_TQS-84 @REQ_TQS-14 @TESTSET_TQS-70
+  Scenario: Unsuccessful multiple requests
+    Given the system is available
+    And the listings are available
+    When I make 2 requests to the same listing
+    Then I should receive an error message
