@@ -527,7 +527,7 @@ function renderBookings(renterBookings, ownerBookings) {
                     <span class="price">€${b.price.toFixed(2)}</span>
                 </div>
                 <div class="list-item-actions">
-                    ${b.status === 'PENDING' ? `<button class="btn btn-success btn-sm" onclick="updateBookingStatus(${b.id}, 'PAID')">Pay</button><button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
+                    ${b.status === 'ACCEPTED' ? `<button class="btn btn-success btn-sm" onclick="updateBookingStatus(${b.id}, 'PAID')">Pay</button><button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
                     ${b.status === 'PAID' ? `<button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
                 </div>
             </div>
@@ -756,10 +756,10 @@ function renderRentalItem(rental) {
                 <span>Owner: ${escapeHtml(rental.ownerName)}</span>
             </div>
             <div class="list-item-actions">
-                ${rental.status === 'PENDING' ?
+                ${rental.status === 'ACCEPTED' ?
                     `<button class="btn btn-success btn-sm" onclick="payBooking(${rental.bookingId})">Pay Now</button>` : ''}
                 <button class="btn btn-info btn-sm" onclick="showRentalDetails(${rental.bookingId})">Details</button>
-                ${rental.status === 'PAID' || rental.status === 'PENDING' ?
+                ${rental.status === 'PAID' || rental.status === 'ACCEPTED' ?
                     `<button class="btn btn-danger btn-sm" onclick="cancelBooking(${rental.bookingId})">Cancel</button>` : ''}
             </div>
         </div>
