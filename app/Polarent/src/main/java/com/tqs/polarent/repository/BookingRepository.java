@@ -53,4 +53,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b JOIN Request r ON b.requestId = r.id " +
             "WHERE r.listingId = :listingId AND (b.status = com.tqs.polarent.enums.Status.ACCEPTED OR b.status = com.tqs.polarent.enums.Status.PAID)")
     List<Booking> findActiveBookingsByListingId(@Param("listingId") Long listingId);
+
+    boolean existsByRequestId(Long requestId);
 }

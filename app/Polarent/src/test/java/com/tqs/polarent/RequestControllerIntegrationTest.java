@@ -184,4 +184,32 @@ class RequestControllerIntegrationTest {
                 .content("[]"))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void convertToBooking_DuplicateAccept_ShouldFail() throws Exception {
+        Request request = requestRepository.save(Request.builder()
+                .listingId(listing.getId())
+                .requesterId(requester.getId())
+                .initialDate(20251215)
+                .duration(3)
+                .build());
+
+        RequestResponseDTO dto = new RequestResponseDTO();
+        dto.setId(request.getId());
+        dto.setListingId(listing.getId());
+        dto.setRequesterId(requester.getId());
+        dto.setDuration(3);
+
+        // First accept should succeed
+        mockMvc.perform(post("/api/requests/accept")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk());
+
+        // Second accept should fail
+        mockMvc.perform(post("/api/requests/accept")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isForbidden());
+    }
 }

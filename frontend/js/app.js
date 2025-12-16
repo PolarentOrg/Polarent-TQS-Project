@@ -527,7 +527,7 @@ function renderBookings(renterBookings, ownerBookings) {
                     <span class="price">€${b.price.toFixed(2)}</span>
                 </div>
                 <div class="list-item-actions">
-                    ${b.status === 'PENDING' ? `<button class="btn btn-success btn-sm" onclick="updateBookingStatus(${b.id}, 'PAID')">Pay</button><button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
+                    ${b.status === 'ACCEPTED' ? `<button class="btn btn-success btn-sm" onclick="updateBookingStatus(${b.id}, 'PAID')">Pay</button><button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
                     ${b.status === 'PAID' ? `<button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
                 </div>
             </div>
@@ -635,19 +635,27 @@ function renderRequests(requests) {
                 ${r.note ? `<span class="note">"${escapeHtml(r.note)}"</span>` : ''}
             </div>
             <div class="list-item-actions">
-                <button class="btn btn-success btn-sm" onclick="acceptRequest(${JSON.stringify(r).replace(/"/g, '&quot;')})">Accept</button>
+                <button class="btn btn-success btn-sm" onclick="acceptRequest(${JSON.stringify(r).replace(/"/g, '&quot;')}, this)">Accept</button>
             </div>
         </div>
     `).join('');
 }
 
-async function acceptRequest(request) {
+async function acceptRequest(request, btn) {
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Accepting...';
+    }
     try {
         await api.acceptRequest(request);
         showToast('Request accepted! Booking created.');
         loadRequests(request.listingId);
     } catch (e) {
         showToast('Failed to accept request', 'error');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Accept';
+        }
     }
 }
 
@@ -748,10 +756,10 @@ function renderRentalItem(rental) {
                 <span>Owner: ${escapeHtml(rental.ownerName)}</span>
             </div>
             <div class="list-item-actions">
-                ${rental.status === 'PENDING' ?
+                ${rental.status === 'ACCEPTED' ?
                     `<button class="btn btn-success btn-sm" onclick="payBooking(${rental.bookingId})">Pay Now</button>` : ''}
                 <button class="btn btn-info btn-sm" onclick="showRentalDetails(${rental.bookingId})">Details</button>
-                ${rental.status === 'PAID' || rental.status === 'PENDING' ?
+                ${rental.status === 'PAID' || rental.status === 'ACCEPTED' ?
                     `<button class="btn btn-danger btn-sm" onclick="cancelBooking(${rental.bookingId})">Cancel</button>` : ''}
             </div>
         </div>

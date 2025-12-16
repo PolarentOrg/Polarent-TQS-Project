@@ -5,6 +5,7 @@ import com.tqs.polarent.dto.BookingResponseDTO;
 import com.tqs.polarent.dto.RequestRequestDTO;
 import com.tqs.polarent.dto.RequestResponseDTO;
 import com.tqs.polarent.entity.Listing;
+import com.tqs.polarent.enums.Status;
 import com.tqs.polarent.repository.ListingRepository;
 import com.tqs.polarent.services.BookingService;
 import com.tqs.polarent.services.RequestService;
@@ -57,6 +58,7 @@ public class RequestController {
         BookingRequestDTO bookingRequest = new BookingRequestDTO();
         bookingRequest.setRequestId(requestDto.getId());
         bookingRequest.setPrice(listing.getDailyRate() * requestDto.getDuration());
+        bookingRequest.setStatus(Status.ACCEPTED);
 
         return ResponseEntity.ok(bookingService.createBooking(bookingRequest));
     }
