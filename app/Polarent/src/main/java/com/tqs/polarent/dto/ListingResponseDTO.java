@@ -11,6 +11,8 @@ public class ListingResponseDTO {
     private String description;
     private Double dailyRate;
     private Boolean enabled;
+    private String city;
+    private String district;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

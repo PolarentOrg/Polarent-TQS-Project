@@ -2,6 +2,7 @@ package com.tqs.polarent.controller;
 
 import com.tqs.polarent.dto.BookingRequestDTO;
 import com.tqs.polarent.dto.BookingResponseDTO;
+import com.tqs.polarent.dto.RequestRequestDTO;
 import com.tqs.polarent.dto.RequestResponseDTO;
 import com.tqs.polarent.entity.Listing;
 import com.tqs.polarent.enums.Status;
@@ -17,12 +18,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class RequestControllerTest {
@@ -64,6 +66,38 @@ class RequestControllerTest {
     }
 
     @Test
+    void whenGetRequestsByListing_thenReturn200() {
+        when(requestService.getRequestsByListing(10L)).thenReturn(List.of(requestDto));
+
+        ResponseEntity<List<RequestResponseDTO>> response = requestController.getRequestsByListing(10L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(1);
+        assertThat(response.getBody().get(0).getId()).isEqualTo(1L);
+    }
+
+    @Test
+    void whenGetRequestsByListing_withNoRequests_thenReturnEmptyList() {
+        when(requestService.getRequestsByListing(99L)).thenReturn(List.of());
+
+        ResponseEntity<List<RequestResponseDTO>> response = requestController.getRequestsByListing(99L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEmpty();
+    }
+
+    @Test
+    void whenGetRequestById_thenReturn200() {
+        when(requestService.getRequestById(1L)).thenReturn(requestDto);
+
+        ResponseEntity<RequestResponseDTO> response = requestController.getRequestById(1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getId()).isEqualTo(1L);
+    }
+
+    @Test
     void whenConvertToBooking_thenReturn200() {
         when(listingRepository.findById(10L)).thenReturn(Optional.of(listing));
         when(bookingService.createBooking(any(BookingRequestDTO.class))).thenReturn(bookingResponseDTO);
@@ -83,5 +117,54 @@ class RequestControllerTest {
         assertThatThrownBy(() -> requestController.convertToBooking(requestDto))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Listing not found");
+    }
+
+    @Test
+    void whenDeleteRequest_thenReturn204() {
+        doNothing().when(requestService).deleteRequest(1L);
+
+        ResponseEntity<Void> response = requestController.deleteRequest(1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        verify(requestService).deleteRequest(1L);
+    }
+
+    @Test
+    void whenCreateRequest_thenReturn201() {
+        RequestRequestDTO requestRequestDTO = new RequestRequestDTO();
+        requestRequestDTO.setListingId(10L);
+        requestRequestDTO.setRequesterId(5L);
+        when(requestService.createRequest(any(RequestRequestDTO.class))).thenReturn(requestDto);
+
+        ResponseEntity<RequestResponseDTO> response = requestController.createRequest(requestRequestDTO);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody().getId()).isEqualTo(1L);
+    }
+
+    @Test
+    void whenCreateBatchRequests_thenReturn201() {
+        RequestRequestDTO dto1 = new RequestRequestDTO();
+        dto1.setListingId(10L);
+        dto1.setRequesterId(5L);
+        RequestRequestDTO dto2 = new RequestRequestDTO();
+        dto2.setListingId(11L);
+        dto2.setRequesterId(5L);
+        List<RequestRequestDTO> dtos = List.of(dto1, dto2);
+
+        RequestResponseDTO response1 = new RequestResponseDTO();
+        response1.setId(1L);
+        RequestResponseDTO response2 = new RequestResponseDTO();
+        response2.setId(2L);
+        List<RequestResponseDTO> responses = List.of(response1, response2);
+
+        when(requestService.createBatchRequests(dtos)).thenReturn(responses);
+
+        ResponseEntity<List<RequestResponseDTO>> response = requestController.createBatchRequests(dtos);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).hasSize(2);
+        assertThat(response.getBody().get(0).getId()).isEqualTo(1L);
+        assertThat(response.getBody().get(1).getId()).isEqualTo(2L);
     }
 }

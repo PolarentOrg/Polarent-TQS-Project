@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
     List<Request> findByListingId(Long listingId);
+    List<Request> findByRequesterId(Long requesterId);
     List<Request> findByListingIdAndRequesterId(Long listingId, Long requesterId);
 }

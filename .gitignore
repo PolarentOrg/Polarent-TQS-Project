@@ -160,3 +160,7 @@ buildNumber.properties
 .classpath
 
 # End of https://www.toptal.com/developers/gitignore/api/maven,java,intellij
+
+# E2E tests
+e2e/node_modules/
+e2e/reports/

@@ -117,7 +117,7 @@ class ListingControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto2)));
 
-        mockMvc.perform(get("/api/listings"))
+        mockMvc.perform(get("/api/listings/enabled"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].title", is("Camera 1")));
