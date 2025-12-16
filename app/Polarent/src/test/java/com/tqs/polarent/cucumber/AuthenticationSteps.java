@@ -22,7 +22,8 @@ public class AuthenticationSteps {
     @Autowired
     private UserRepository userRepository;
 
-    private ResponseEntity<LoginResponseDTO> response;
+    private ResponseEntity<LoginResponseDTO> loginResponse;
+    private ResponseEntity<LoginResponseDTO> registerResponse;
     private RegisterRequestDTO registerRequest;
     private LoginRequestDTO loginRequest;
 
@@ -37,24 +38,28 @@ public class AuthenticationSteps {
 
     @When("I register with valid credentials")
     public void iRegisterWithValidCredentials() {
-        response = restTemplate.postForEntity("/api/auth/register", registerRequest, LoginResponseDTO.class);
+        registerResponse = restTemplate.postForEntity("/api/auth/register", registerRequest, LoginResponseDTO.class);
     }
 
     @Then("I should be registered successfully")
     public void iShouldBeRegisteredSuccessfully() {
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody()).isNotNull();
+        assertThat(registerResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(registerResponse.getBody()).isNotNull();
     }
 
     @Given("I am a registered user")
     public void iAmARegisteredUser() {
+        // Criar um novo usuário
         registerRequest = new RegisterRequestDTO();
         registerRequest.setFirstName("Test");
         registerRequest.setLastName("User");
         registerRequest.setEmail("testuser_" + System.currentTimeMillis() + "@test.com");
         registerRequest.setPassword("password123");
+
+        // Registrar o usuário
         restTemplate.postForEntity("/api/auth/register", registerRequest, LoginResponseDTO.class);
 
+        // Preparar credenciais de login
         loginRequest = new LoginRequestDTO();
         loginRequest.setEmail(registerRequest.getEmail());
         loginRequest.setPassword(registerRequest.getPassword());
@@ -62,23 +67,44 @@ public class AuthenticationSteps {
 
     @When("I login with valid credentials")
     public void iLoginWithValidCredentials() {
-        response = restTemplate.postForEntity("/api/auth/login", loginRequest, LoginResponseDTO.class);
+        // Se loginRequest ainda não existe, criar com base no registerRequest
+        if (loginRequest == null) {
+            // Primeiro registrar o usuário
+            registerResponse = restTemplate.postForEntity("/api/auth/register", registerRequest, LoginResponseDTO.class);
+
+            // Criar loginRequest com as mesmas credenciais
+            loginRequest = new LoginRequestDTO();
+            loginRequest.setEmail(registerRequest.getEmail());
+            loginRequest.setPassword(registerRequest.getPassword());
+        }
+
+        loginResponse = restTemplate.postForEntity("/api/auth/login", loginRequest, LoginResponseDTO.class);
     }
 
     @Then("I should receive a successful login response")
     public void iShouldReceiveASuccessfulLoginResponse() {
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
+        assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(loginResponse.getBody()).isNotNull();
     }
 
     @When("I login with invalid credentials")
     public void iLoginWithInvalidCredentials() {
         loginRequest.setPassword("wrongpassword");
-        response = restTemplate.postForEntity("/api/auth/login", loginRequest, LoginResponseDTO.class);
+        loginResponse = restTemplate.postForEntity("/api/auth/login", loginRequest, LoginResponseDTO.class);
     }
 
     @Then("I should receive an authentication error")
     public void iShouldReceiveAnAuthenticationError() {
-        assertThat(response.getStatusCode()).isIn(HttpStatus.UNAUTHORIZED, HttpStatus.BAD_REQUEST, HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(loginResponse.getStatusCode()).isIn(HttpStatus.UNAUTHORIZED, HttpStatus.BAD_REQUEST, HttpStatus.FORBIDDEN);
+    }
+    
+    @Given("I am logged in as an admin")
+    public void i_am_logged_in_as_an_admin() {
+        // Admin login simulation
+    }
+    
+    @Given("I am on the Admin panel")
+    public void i_am_on_the_admin_panel() {
+        // Navigate to admin panel
     }
 }

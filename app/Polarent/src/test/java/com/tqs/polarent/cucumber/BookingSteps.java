@@ -34,7 +34,8 @@ public class BookingSteps {
     private BookingRepository bookingRepository;
 
     private ResponseEntity<BookingResponseDTO> bookingResponse;
-    private ResponseEntity<RenterDashboardDTO> dashboardResponse;
+    private ResponseEntity<RenterDashboardDTO> renterDashboardResponse;
+    private ResponseEntity<RenterDashboardDTO> ownerDashboardResponse;  // Usar o mesmo DTO
     private Long ownerId;
     private Long renterId;
     private Long listingId;
@@ -171,13 +172,39 @@ public class BookingSteps {
 
     @When("I view my dashboard")
     public void iViewMyDashboard() {
-        dashboardResponse = restTemplate.getForEntity("/api/bookings/renter/" + renterId + "/dashboard",
+        renterDashboardResponse = restTemplate.getForEntity("/api/bookings/renter/" + renterId + "/dashboard",
                 RenterDashboardDTO.class);
     }
 
     @Then("I should see my rental statistics")
     public void iShouldSeeMyRentalStatistics() {
-        assertThat(dashboardResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(dashboardResponse.getBody()).isNotNull();
+        assertThat(renterDashboardResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(renterDashboardResponse.getBody()).isNotNull();
+    }
+
+    // Novo cenário: View owner dashboard
+    @Given("I am a owner with bookings")
+    public void iAmAnOwnerWithBookings() {
+        createOwner();
+        createRenter();
+        createListingAndRequest("Owner Dashboard Equipment");
+        RequestResponseDTO requestDto = new RequestResponseDTO();
+        requestDto.setId(requestId);
+        requestDto.setListingId(listingId);
+        requestDto.setRequesterId(renterId);
+        requestDto.setDuration(3);
+        restTemplate.postForEntity("/api/requests/accept", requestDto, BookingResponseDTO.class);
+    }
+
+    @When("I view my owner dashboard")
+    public void iViewMyOwnerDashboard() {
+        ownerDashboardResponse = restTemplate.getForEntity("/api/bookings/owner/" + ownerId + "/dashboard",
+                RenterDashboardDTO.class);
+    }
+
+    @Then("I should see my owner rental statistics")
+    public void iShouldSeeMyOwnerRentalStatistics() {
+        assertThat(ownerDashboardResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(ownerDashboardResponse.getBody()).isNotNull();
     }
 }
