@@ -635,19 +635,27 @@ function renderRequests(requests) {
                 ${r.note ? `<span class="note">"${escapeHtml(r.note)}"</span>` : ''}
             </div>
             <div class="list-item-actions">
-                <button class="btn btn-success btn-sm" onclick="acceptRequest(${JSON.stringify(r).replace(/"/g, '&quot;')})">Accept</button>
+                <button class="btn btn-success btn-sm" onclick="acceptRequest(${JSON.stringify(r).replace(/"/g, '&quot;')}, this)">Accept</button>
             </div>
         </div>
     `).join('');
 }
 
-async function acceptRequest(request) {
+async function acceptRequest(request, btn) {
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Accepting...';
+    }
     try {
         await api.acceptRequest(request);
         showToast('Request accepted! Booking created.');
         loadRequests(request.listingId);
     } catch (e) {
         showToast('Failed to accept request', 'error');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Accept';
+        }
     }
 }
 

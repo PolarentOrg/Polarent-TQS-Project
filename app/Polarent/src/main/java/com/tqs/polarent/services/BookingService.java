@@ -29,6 +29,10 @@ public class BookingService {
         requestRepository.findById(dto.getRequestId())
                 .orElseThrow(() -> new IllegalArgumentException("Request not found"));
 
+        if (bookingRepository.existsByRequestId(dto.getRequestId())) {
+            throw new IllegalStateException("Booking already exists for this request");
+        }
+
         Booking booking = bookingMapper.toEntity(dto);
         Booking saved = bookingRepository.save(booking);
         return bookingMapper.toDto(saved);
